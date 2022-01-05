@@ -18,13 +18,45 @@ function load_tables(LEAGUE_ID, slots) {
     teams_request.responseType = 'json';
     teams_request.send()
 
+    const valid_teams = new Set()
+    if (LEAGUE_ID === 13740) { // WEU Div2
+        valid_teams.add(8261397)
+        valid_teams.add(8343488)
+        valid_teams.add(8344760)
+        valid_teams.add(8390848)
+        valid_teams.add(8598715)
+        valid_teams.add(8112124)
+        valid_teams.add(8597391)
+        valid_teams.add(8605863)
+    }
+    else if (LEAGUE_ID === 13742) { // NA Div2
+        valid_teams.add(8205424)
+        valid_teams.add(8230115)
+        valid_teams.add(8262639)
+        valid_teams.add(8607159)
+        valid_teams.add(8604954)
+        valid_teams.add(8581426)
+        valid_teams.add(8606828)
+        valid_teams.add(8261882)
+    }
+
     teams_request.onload = function() {
         const data = teams_request.response;
         for (let i = 0; i < data.length; i++) {
+            if (LEAGUE_ID === 13740 || LEAGUE_ID === 13742) {
+                if (!valid_teams.has(data[i].team_id)) {
+                    continue
+                }
+            }
             id_to_team[data[i].team_id] = data[i].name
             team_to_id[data[i].name] = data[i].team_id
             match_table[data[i].team_id] = {}
             for (let j = 0; j < data.length; j++) {
+                if (LEAGUE_ID === 13740 || LEAGUE_ID === 13742) {
+                    if (!valid_teams.has(data[j].team_id)) {
+                        continue
+                    }
+                }
                 if (i !== j) {
                     match_table[data[i].team_id][data[j].team_id] = -1
                 }
@@ -43,6 +75,11 @@ function load_tables(LEAGUE_ID, slots) {
         matches_request.onload = function() {
             const data = matches_request.response;
             for (let i = 0; i < data.length; i++) {
+                if (LEAGUE_ID === 13740 || LEAGUE_ID === 13742) {
+                    if (!valid_teams.has(data[i].radiant_team_id) || !valid_teams.has(data[i].dire_team_id)) {
+                        continue
+                    }
+                }
                 if (match_table[data[i].radiant_team_id][data[i].dire_team_id] === -1) {
                     match_table[data[i].radiant_team_id][data[i].dire_team_id] = 0
                     match_table[data[i].dire_team_id][data[i].radiant_team_id] = 0
@@ -58,14 +95,25 @@ function load_tables(LEAGUE_ID, slots) {
 
             //HARD CODE MISTAKES
             if (LEAGUE_ID === 13712) {
-                match_table[7391077][7119077] = 2 //TP vs Lava
+                match_table[7391077][7119077] = 2 // TP vs Lava
             }
             else if (LEAGUE_ID === 13709) {
-                match_table[7422789][8255888] = 2 //Unique (Mind Games) forfeit game 1 vs HellRaisers
+                match_table[7422789][8255888] = 2 // Unique (Mind Games) forfeit game 1 vs HellRaisers
             }
             else if (LEAGUE_ID === 13716) {
-                match_table[6209804][5] = 2
+                match_table[6209804][5] = 2 // RNG 2-1 iG
             }
+            else if (LEAGUE_ID === 13740) {
+                match_table[8390848][8597391] = 2 // CF 2-0 CHILLAX
+                match_table[8605863][8112124] = 1 // Entity 1-2 Brame
+                match_table[8597391][8261397] = 2 // CHILLAX W-FF NoBountyHunter
+                match_table[8261397][8597391] = 0  // NoBountyHunter FF-W CHILLAX
+            }
+            else if (LEAGUE_ID === 13717) {
+                match_table[1520578][7356881] = 0 // CDEC FF-W SHENZHEN
+                match_table[7356881][1520578] = 2 // SHENZHEN w-FF CDEC
+            }
+
             //
 
             console.log(match_table)
@@ -95,6 +143,8 @@ function load_tables(LEAGUE_ID, slots) {
 
             standings.sort(standings_sort)
 
+            run_simulations(id_to_team, match_table, standings, MAJOR_SLOTS, 0)
+
             // console.log(standings)
 
             for (let i = 0; i < standings.length; i++) {
@@ -108,8 +158,6 @@ function load_tables(LEAGUE_ID, slots) {
                 document.getElementById(`team_${i+1}_record`).innerHTML = `${standings[i].wins}-${standings[i].matches-standings[i].wins}`
                 document.getElementById(`team_${i+1}_map_record`).innerHTML = `${standings[i].map_wins}-${standings[i].total_maps-standings[i].map_wins}`
             }
-
-            run_simulations(id_to_team, match_table, standings, MAJOR_SLOTS, 0)
 
             let curr_index = 0
             for (const [team1, value] of Object.entries(match_table)) {
@@ -141,6 +189,9 @@ function load_tables(LEAGUE_ID, slots) {
                 }
                 curr_index += 1
             }
+
+            document.getElementById("main_body").classList.remove("hidden")
+            document.getElementById("loading").classList.add("hidden")
         }
     }
 }
@@ -184,10 +235,16 @@ async function loop_simuations(teams_dict, curr_matches, curr_standings, MAJOR_S
         window.requestAnimationFrame(() => {
             for (let run = 0; run < UPDATE_NUM; run++) {
                 const new_matches = {}
+                let new_standings = []
                 for (const [key, value] of Object.entries(curr_matches)) {
                     new_matches[key] = {...value}
                 }
                 for (const [team1, value] of Object.entries(new_matches)) {
+                    let wins = 0
+                    let matches = 0
+                    let map_wins = 0
+                    let total_maps = 0
+
                     for (const [team2, score] of Object.entries(value)) {
                         if (score === -1) {
                             if (Math.random() < 0.5) {
@@ -219,29 +276,18 @@ async function loop_simuations(teams_dict, curr_matches, curr_standings, MAJOR_S
                                 }
                             }
                         }
-                    }
-                }
 
-                let new_standings = []
-
-                for (const [team_name, val] of Object.entries(new_matches)) {
-                    let wins = 0
-                    let matches = 0
-                    let map_wins = 0
-                    let total_maps = 0
-                    for (const [opp_team, score] of Object.entries(val)) {
-                        if (score !== -1) {
-                            if (new_matches[opp_team][team_name] === 2 || score === 2) {
-                                matches += 1
-                            }
-                            map_wins += score
-                            total_maps += (new_matches[opp_team][team_name] + score)
-                            if (score === 2) {
-                                wins += 1
-                            }
+                        if (new_matches[team2][team1] === 2 || new_matches[team1][team2] === 2) {
+                            matches += 1
                         }
+                        map_wins += new_matches[team1][team2]
+                        total_maps += (new_matches[team2][team1] + new_matches[team1][team2])
+                        if (new_matches[team1][team2] === 2) {
+                            wins += 1
+                        }
+
                     }
-                    new_standings.push({'wins': wins, 'matches': matches, 'map_wins': map_wins, 'total_maps': total_maps, 'team_name': team_name})
+                    new_standings.push({'wins': wins, 'matches': matches, 'map_wins': map_wins, 'total_maps': total_maps, 'team_name': team1})
                 }
 
                 new_standings.sort(standings_sort)
@@ -483,7 +529,7 @@ async function change_standings(curr_move) {
 
 function shuffleArray(array, start, end) {
     for (let i = start; i > end; i--) {
-        const j = Math.floor(Math.random() * (start-end+1)) + end;
+        const j = Math.floor(Math.random() * (i-end+1)) + end;
         [array[i], array[j]] = [array[j], array[i]];
     }
 }
