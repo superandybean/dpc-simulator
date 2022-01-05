@@ -6,6 +6,7 @@
 		<title>DPC Simulator - Western Europe</title>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 		<link rel="stylesheet" href="styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<script src="index.js"></script>
 	</head>
 	<body class="bg-gray-400 min-h-full flex flex-col">
@@ -13,201 +14,205 @@
             <a href="index.html">DPC Simulator - Western Europe</a>
         </div>
 		<div class="px-4 py-2 flex flex-col flex-grow">
-			<div class="flex flex-col md:flex-row">
-				<table clsas="mx-2">
-					<tr>
-						<th colspan="6" class="text-center px-2">Round Robin</th>
-					</tr>
-					<tr>
-						<td id="team_1_place" class="px-2"></td>
-						<td colspan="3" id="team_1_name" class="pl-4"></td>
-						<td id="team_1_record" class="px-4"></td>
-						<td id="team_1_map_record"></td>
-					</tr>
-					<tr>
-						<td id="team_2_place" class="px-2"></td>
-						<td colspan="3" id="team_2_name" class="pl-4"></td>
-						<td id="team_2_record" class="px-4"></td>
-						<td id="team_2_map_record"></td>
-					</tr>
-					<tr>
-						<td id="team_3_place" class="px-2"></td>
-						<td colspan="3" id="team_3_name" class="pl-4"></td>
-						<td id="team_3_record" class="px-4"></td>
-						<td id="team_3_map_record"></td>
-					</tr>
-					<tr>
-						<td id="team_4_place" class="px-2"></td>
-						<td colspan="3" id="team_4_name" class="pl-4"></td>
-						<td id="team_4_record" class="px-4"></td>
-						<td id="team_4_map_record"></td>
-					</tr>
-					<tr>
-						<td id="team_5_place" class="px-2"></td>
-						<td colspan="3" id="team_5_name" class="pl-4"></td>
-						<td id="team_5_record" class="px-4"></td>
-						<td id="team_5_map_record"></td>
-					</tr>
-					<tr>
-						<td id="team_6_place" class="px-2"></td>
-						<td colspan="3" id="team_6_name" class="pl-4"></td>
-						<td id="team_6_record" class="px-4"></td>
-						<td id="team_6_map_record"></td>
-					</tr>
-					<tr>
-						<td id="team_7_place" class="px-2"></td>
-						<td colspan="3" id="team_7_name" class="pl-4"></td>
-						<td id="team_7_record" class="px-4"></td>
-						<td id="team_7_map_record"></td>
-					</tr>
-					<tr>
-						<td id="team_8_place" class="px-2"></td>
-						<td colspan="3" id="team_8_name" class="pl-4"></td>
-						<td id="team_8_record" class="px-4"></td>
-						<td id="team_8_map_record"></td>
-					</tr>
-				</table>
-				<table class="mx-2">
-					<tr>
-						<th class="px-2">Major</th>
-						<th class="px-2">Remain</th>
-						<th class="px-2">Relegation</th>
-					</tr>
-					<tr>
-						<td class="px-2 text-center" id="team_1_major_chance">0%</td>
-						<td class="px-2 text-center" id="team_1_remain_chance">0%</td>
-						<td class="px-2 text-center" id="team_1_relegation_chance">0%</td>
-					</tr>
-					<tr>
-						<td class="px-2 text-center" id="team_2_major_chance">0%</td>
-						<td class="px-2 text-center" id="team_2_remain_chance">0%</td>
-						<td class="px-2 text-center" id="team_2_relegation_chance">0%</td>
-					</tr>
-					<tr>
-						<td class="px-2 text-center" id="team_3_major_chance">0%</td>
-						<td class="px-2 text-center" id="team_3_remain_chance">0%</td>
-						<td class="px-2 text-center" id="team_3_relegation_chance">0%</td>
-					</tr>
-					<tr>
-						<td class="px-2 text-center" id="team_4_major_chance">0%</td>
-						<td class="px-2 text-center" id="team_4_remain_chance">0%</td>
-						<td class="px-2 text-center" id="team_4_relegation_chance">0%</td>
-					</tr>
-					<tr>
-						<td class="px-2 text-center" id="team_5_major_chance">0%</td>
-						<td class="px-2 text-center" id="team_5_remain_chance">0%</td>
-						<td class="px-2 text-center" id="team_5_relegation_chance">0%</td>
-					</tr>
-					<tr>
-						<td class="px-2 text-center" id="team_6_major_chance">0%</td>
-						<td class="px-2 text-center" id="team_6_remain_chance">0%</td>
-						<td class="px-2 text-center" id="team_6_relegation_chance">0%</td>
-					</tr>
-					<tr>
-						<td class="px-2 text-center" id="team_7_major_chance">0%</td>
-						<td class="px-2 text-center" id="team_7_remain_chance">0%</td>
-						<td class="px-2 text-center" id="team_7_relegation_chance">0%</td>
-					</tr>
-					<tr>
-						<td class="px-2 text-center" id="team_8_major_chance">0%</td>
-						<td class="px-2 text-center" id="team_8_remain_chance">0%</td>
-						<td class="px-2 text-center" id="team_8_relegation_chance">0%</td>
-					</tr>
-				</table>
-				<table class="mx-2">
-					<tr>
-						<th class="text-center">1</th>
-						<th class="text-center">2</th>
-						<th class="text-center">3</th>
-						<th class="text-center">4</th>
-						<th class="text-center">5</th>
-						<th class="text-center">6</th>
-						<th class="text-center">7</th>
-						<th class="text-center">8</th>
-					</tr>
-					<tr>
-						<td class="text-center px-2" id="team_1_place1">0%</td>
-						<td class="text-center px-2" id="team_1_place2">0%</td>
-						<td class="text-center px-2" id="team_1_place3">0%</td>
-						<td class="text-center px-2" id="team_1_place4">0%</td>
-						<td class="text-center px-2" id="team_1_place5">0%</td>
-						<td class="text-center px-2" id="team_1_place6">0%</td>
-						<td class="text-center px-2" id="team_1_place7">0%</td>
-						<td class="text-center px-2" id="team_1_place8">0%</td>
-					</tr>
-					<tr>
-						<td class="text-center px-2" id="team_2_place1">0%</td>
-						<td class="text-center px-2" id="team_2_place2">0%</td>
-						<td class="text-center px-2" id="team_2_place3">0%</td>
-						<td class="text-center px-2" id="team_2_place4">0%</td>
-						<td class="text-center px-2" id="team_2_place5">0%</td>
-						<td class="text-center px-2" id="team_2_place6">0%</td>
-						<td class="text-center px-2" id="team_2_place7">0%</td>
-						<td class="text-center px-2" id="team_2_place8">0%</td>
-					</tr>
-					<tr>
-						<td class="text-center px-2" id="team_3_place1">0%</td>
-						<td class="text-center px-2" id="team_3_place2">0%</td>
-						<td class="text-center px-2" id="team_3_place3">0%</td>
-						<td class="text-center px-2" id="team_3_place4">0%</td>
-						<td class="text-center px-2" id="team_3_place5">0%</td>
-						<td class="text-center px-2" id="team_3_place6">0%</td>
-						<td class="text-center px-2" id="team_3_place7">0%</td>
-						<td class="text-center px-2" id="team_3_place8">0%</td>
-					</tr>
-					<tr>
-						<td class="text-center px-2" id="team_4_place1">0%</td>
-						<td class="text-center px-2" id="team_4_place2">0%</td>
-						<td class="text-center px-2" id="team_4_place3">0%</td>
-						<td class="text-center px-2" id="team_4_place4">0%</td>
-						<td class="text-center px-2" id="team_4_place5">0%</td>
-						<td class="text-center px-2" id="team_4_place6">0%</td>
-						<td class="text-center px-2" id="team_4_place7">0%</td>
-						<td class="text-center px-2" id="team_4_place8">0%</td>
-					</tr>
-					<tr>
-						<td class="text-center px-2" id="team_5_place1">0%</td>
-						<td class="text-center px-2" id="team_5_place2">0%</td>
-						<td class="text-center px-2" id="team_5_place3">0%</td>
-						<td class="text-center px-2" id="team_5_place4">0%</td>
-						<td class="text-center px-2" id="team_5_place5">0%</td>
-						<td class="text-center px-2" id="team_5_place6">0%</td>
-						<td class="text-center px-2" id="team_5_place7">0%</td>
-						<td class="text-center px-2" id="team_5_place8">0%</td>
-					</tr>
-					<tr>
-						<td class="text-center px-2" id="team_6_place1">0%</td>
-						<td class="text-center px-2" id="team_6_place2">0%</td>
-						<td class="text-center px-2" id="team_6_place3">0%</td>
-						<td class="text-center px-2" id="team_6_place4">0%</td>
-						<td class="text-center px-2" id="team_6_place5">0%</td>
-						<td class="text-center px-2" id="team_6_place6">0%</td>
-						<td class="text-center px-2" id="team_6_place7">0%</td>
-						<td class="text-center px-2" id="team_6_place8">0%</td>
-					</tr>
-					<tr>
-						<td class="text-center px-2" id="team_7_place1">0%</td>
-						<td class="text-center px-2" id="team_7_place2">0%</td>
-						<td class="text-center px-2" id="team_7_place3">0%</td>
-						<td class="text-center px-2" id="team_7_place4">0%</td>
-						<td class="text-center px-2" id="team_7_place5">0%</td>
-						<td class="text-center px-2" id="team_7_place6">0%</td>
-						<td class="text-center px-2" id="team_7_place7">0%</td>
-						<td class="text-center px-2" id="team_7_place8">0%</td>
-					</tr>
-					<tr>
-						<td class="text-center px-2" id="team_8_place1">0%</td>
-						<td class="text-center px-2" id="team_8_place2">0%</td>
-						<td class="text-center px-2" id="team_8_place3">0%</td>
-						<td class="text-center px-2" id="team_8_place4">0%</td>
-						<td class="text-center px-2" id="team_8_place5">0%</td>
-						<td class="text-center px-2" id="team_8_place6">0%</td>
-						<td class="text-center px-2" id="team_8_place7">0%</td>
-						<td class="text-center px-2" id="team_8_place8">0%</td>
-					</tr>
-				</table>
+			<div class="flex flex-col lg:flex-row">
+                <div class="flex flex-col md:flex-row">
+                    <table clsas="mx-2">
+                        <tr>
+                            <th colspan="6" class="text-center px-2">Round Robin</th>
+                        </tr>
+                        <tr>
+                            <td id="team_1_place" class="px-2"></td>
+                            <td colspan="3" id="team_1_name" class="pl-4"></td>
+                            <td id="team_1_record" class="px-4"></td>
+                            <td id="team_1_map_record"></td>
+                        </tr>
+                        <tr>
+                            <td id="team_2_place" class="px-2"></td>
+                            <td colspan="3" id="team_2_name" class="pl-4"></td>
+                            <td id="team_2_record" class="px-4"></td>
+                            <td id="team_2_map_record"></td>
+                        </tr>
+                        <tr>
+                            <td id="team_3_place" class="px-2"></td>
+                            <td colspan="3" id="team_3_name" class="pl-4"></td>
+                            <td id="team_3_record" class="px-4"></td>
+                            <td id="team_3_map_record"></td>
+                        </tr>
+                        <tr>
+                            <td id="team_4_place" class="px-2"></td>
+                            <td colspan="3" id="team_4_name" class="pl-4"></td>
+                            <td id="team_4_record" class="px-4"></td>
+                            <td id="team_4_map_record"></td>
+                        </tr>
+                        <tr>
+                            <td id="team_5_place" class="px-2"></td>
+                            <td colspan="3" id="team_5_name" class="pl-4"></td>
+                            <td id="team_5_record" class="px-4"></td>
+                            <td id="team_5_map_record"></td>
+                        </tr>
+                        <tr>
+                            <td id="team_6_place" class="px-2"></td>
+                            <td colspan="3" id="team_6_name" class="pl-4"></td>
+                            <td id="team_6_record" class="px-4"></td>
+                            <td id="team_6_map_record"></td>
+                        </tr>
+                        <tr>
+                            <td id="team_7_place" class="px-2"></td>
+                            <td colspan="3" id="team_7_name" class="pl-4"></td>
+                            <td id="team_7_record" class="px-4"></td>
+                            <td id="team_7_map_record"></td>
+                        </tr>
+                        <tr>
+                            <td id="team_8_place" class="px-2"></td>
+                            <td colspan="3" id="team_8_name" class="pl-4"></td>
+                            <td id="team_8_record" class="px-4"></td>
+                            <td id="team_8_map_record"></td>
+                        </tr>
+                    </table>
+                    <table class="mx-2">
+                        <tr>
+                            <th class="px-2">Major</th>
+                            <th class="px-2">Remain</th>
+                            <th class="px-2">Relegation</th>
+                        </tr>
+                        <tr>
+                            <td class="px-2 text-center" id="team_1_major_chance">0%</td>
+                            <td class="px-2 text-center" id="team_1_remain_chance">0%</td>
+                            <td class="px-2 text-center" id="team_1_relegation_chance">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="px-2 text-center" id="team_2_major_chance">0%</td>
+                            <td class="px-2 text-center" id="team_2_remain_chance">0%</td>
+                            <td class="px-2 text-center" id="team_2_relegation_chance">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="px-2 text-center" id="team_3_major_chance">0%</td>
+                            <td class="px-2 text-center" id="team_3_remain_chance">0%</td>
+                            <td class="px-2 text-center" id="team_3_relegation_chance">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="px-2 text-center" id="team_4_major_chance">0%</td>
+                            <td class="px-2 text-center" id="team_4_remain_chance">0%</td>
+                            <td class="px-2 text-center" id="team_4_relegation_chance">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="px-2 text-center" id="team_5_major_chance">0%</td>
+                            <td class="px-2 text-center" id="team_5_remain_chance">0%</td>
+                            <td class="px-2 text-center" id="team_5_relegation_chance">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="px-2 text-center" id="team_6_major_chance">0%</td>
+                            <td class="px-2 text-center" id="team_6_remain_chance">0%</td>
+                            <td class="px-2 text-center" id="team_6_relegation_chance">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="px-2 text-center" id="team_7_major_chance">0%</td>
+                            <td class="px-2 text-center" id="team_7_remain_chance">0%</td>
+                            <td class="px-2 text-center" id="team_7_relegation_chance">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="px-2 text-center" id="team_8_major_chance">0%</td>
+                            <td class="px-2 text-center" id="team_8_remain_chance">0%</td>
+                            <td class="px-2 text-center" id="team_8_relegation_chance">0%</td>
+                        </tr>
+                    </table>
+                </div>
+                <div>
+                    <table class="mx-2">
+                        <tr>
+                            <th class="text-center">1</th>
+                            <th class="text-center">2</th>
+                            <th class="text-center">3</th>
+                            <th class="text-center">4</th>
+                            <th class="text-center">5</th>
+                            <th class="text-center">6</th>
+                            <th class="text-center">7</th>
+                            <th class="text-center">8</th>
+                        </tr>
+                        <tr>
+                            <td class="text-center px-2" id="team_1_place1">0%</td>
+                            <td class="text-center px-2" id="team_1_place2">0%</td>
+                            <td class="text-center px-2" id="team_1_place3">0%</td>
+                            <td class="text-center px-2" id="team_1_place4">0%</td>
+                            <td class="text-center px-2" id="team_1_place5">0%</td>
+                            <td class="text-center px-2" id="team_1_place6">0%</td>
+                            <td class="text-center px-2" id="team_1_place7">0%</td>
+                            <td class="text-center px-2" id="team_1_place8">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center px-2" id="team_2_place1">0%</td>
+                            <td class="text-center px-2" id="team_2_place2">0%</td>
+                            <td class="text-center px-2" id="team_2_place3">0%</td>
+                            <td class="text-center px-2" id="team_2_place4">0%</td>
+                            <td class="text-center px-2" id="team_2_place5">0%</td>
+                            <td class="text-center px-2" id="team_2_place6">0%</td>
+                            <td class="text-center px-2" id="team_2_place7">0%</td>
+                            <td class="text-center px-2" id="team_2_place8">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center px-2" id="team_3_place1">0%</td>
+                            <td class="text-center px-2" id="team_3_place2">0%</td>
+                            <td class="text-center px-2" id="team_3_place3">0%</td>
+                            <td class="text-center px-2" id="team_3_place4">0%</td>
+                            <td class="text-center px-2" id="team_3_place5">0%</td>
+                            <td class="text-center px-2" id="team_3_place6">0%</td>
+                            <td class="text-center px-2" id="team_3_place7">0%</td>
+                            <td class="text-center px-2" id="team_3_place8">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center px-2" id="team_4_place1">0%</td>
+                            <td class="text-center px-2" id="team_4_place2">0%</td>
+                            <td class="text-center px-2" id="team_4_place3">0%</td>
+                            <td class="text-center px-2" id="team_4_place4">0%</td>
+                            <td class="text-center px-2" id="team_4_place5">0%</td>
+                            <td class="text-center px-2" id="team_4_place6">0%</td>
+                            <td class="text-center px-2" id="team_4_place7">0%</td>
+                            <td class="text-center px-2" id="team_4_place8">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center px-2" id="team_5_place1">0%</td>
+                            <td class="text-center px-2" id="team_5_place2">0%</td>
+                            <td class="text-center px-2" id="team_5_place3">0%</td>
+                            <td class="text-center px-2" id="team_5_place4">0%</td>
+                            <td class="text-center px-2" id="team_5_place5">0%</td>
+                            <td class="text-center px-2" id="team_5_place6">0%</td>
+                            <td class="text-center px-2" id="team_5_place7">0%</td>
+                            <td class="text-center px-2" id="team_5_place8">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center px-2" id="team_6_place1">0%</td>
+                            <td class="text-center px-2" id="team_6_place2">0%</td>
+                            <td class="text-center px-2" id="team_6_place3">0%</td>
+                            <td class="text-center px-2" id="team_6_place4">0%</td>
+                            <td class="text-center px-2" id="team_6_place5">0%</td>
+                            <td class="text-center px-2" id="team_6_place6">0%</td>
+                            <td class="text-center px-2" id="team_6_place7">0%</td>
+                            <td class="text-center px-2" id="team_6_place8">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center px-2" id="team_7_place1">0%</td>
+                            <td class="text-center px-2" id="team_7_place2">0%</td>
+                            <td class="text-center px-2" id="team_7_place3">0%</td>
+                            <td class="text-center px-2" id="team_7_place4">0%</td>
+                            <td class="text-center px-2" id="team_7_place5">0%</td>
+                            <td class="text-center px-2" id="team_7_place6">0%</td>
+                            <td class="text-center px-2" id="team_7_place7">0%</td>
+                            <td class="text-center px-2" id="team_7_place8">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center px-2" id="team_8_place1">0%</td>
+                            <td class="text-center px-2" id="team_8_place2">0%</td>
+                            <td class="text-center px-2" id="team_8_place3">0%</td>
+                            <td class="text-center px-2" id="team_8_place4">0%</td>
+                            <td class="text-center px-2" id="team_8_place5">0%</td>
+                            <td class="text-center px-2" id="team_8_place6">0%</td>
+                            <td class="text-center px-2" id="team_8_place7">0%</td>
+                            <td class="text-center px-2" id="team_8_place8">0%</td>
+                        </tr>
+                    </table>
+                </div>
 			</div>
-			<div class="grid grid-cols-1 md:grid-cols-4 gap-y-2 pt-4">
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-y-2 pt-4">
                 <div class="w-full px-2 py-2">
 					<div class="font-bold text-2xl flex align-center items-center justify-center text-center">
                         <img id="team_1_icon" style="height: 30px">
