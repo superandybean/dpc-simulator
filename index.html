@@ -8,12 +8,12 @@
 		<link rel="stylesheet" href="styles.css">
 		<script src="index.js"></script>
 	</head>
-	<body class="bg-gray-400">
+	<body class="bg-gray-400 min-h-full flex flex-col">
 		<div class="w-full py-6 font-bold text-7xl text-center text-white bg-gray-700">
             DPC Simulator
         </div>
-		<div class="px-4 py-2 flex flex-col">
-			<div class="grid grid-cols-3 gap-y-2">
+		<div class="px-4 py-2 flex flex-col flex-grow">
+			<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-2">
 				<div class="w-full px-2 py-4 flex flex-col text-3xl items-center align-center justify-center text-center font-bold">
 					<a href="weu.html" class="flex flex-col text-3xl items-center align-center justify-center">
 						<img src="imgs/weu.svg" style="height: 100px;">
@@ -49,6 +49,19 @@
 						<img src="imgs/sa.svg" style="height: 100px;">
 						South America
 					</a>
+				</div>
+			</div>
+		</div>
+		<div class="w-full flex-shrink-0">
+			<div class="text-center font-normal pt-4 pb-2 flex flex-row items-center justify-center">
+				<div class="pl-0">
+					Icons from <a href="https://liquipedia.net/dota2/Main_Page" class="text-blue-700">Liquipedia</a>
+				</div>
+				<div class="pl-4">
+					API Data from <a href="https://docs.opendota.com/" class="text-blue-700">OpenDota</a>
+				</div>
+				<div class="pl-4">
+					<a target="_blank" rel="noopener noreferrer" href="https://github.com/superandybean/dpc-simulator" class="text-blue-700">Open Source</a>
 				</div>
 			</div>
 		</div>

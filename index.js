@@ -8,6 +8,8 @@ let MAJOR_SLOTS = 0
 const NUM_OF_RUNS = 10000
 const UPDATE_NUM = 250
 
+let curr_update = 0
+
 function load_tables(LEAGUE_ID, slots) {
     MAJOR_SLOTS = slots
     let teams_request = new XMLHttpRequest();
@@ -18,8 +20,6 @@ function load_tables(LEAGUE_ID, slots) {
 
     teams_request.onload = function() {
         const data = teams_request.response;
-        console.log(data)
-
         for (let i = 0; i < data.length; i++) {
             id_to_team[data[i].team_id] = data[i].name
             team_to_id[data[i].name] = data[i].team_id
@@ -33,7 +33,6 @@ function load_tables(LEAGUE_ID, slots) {
         }
 
         console.log(id_to_team)
-        console.log(match_table)
 
         let matches_request = new XMLHttpRequest();
         matches_request.open('GET', `https://api.opendota.com/api/leagues/${LEAGUE_ID}/matches`)
@@ -92,11 +91,11 @@ function load_tables(LEAGUE_ID, slots) {
                 standings.push({'wins': wins, 'matches': matches, 'map_wins': map_wins, 'total_maps': total_maps, 'team_name': team_name})
             }
 
-            console.log(standings)
+            // console.log(standings)
 
             standings.sort(standings_sort)
 
-            console.log(standings)
+            // console.log(standings)
 
             for (let i = 0; i < standings.length; i++) {
                 if (i > 0 && standings[i].wins === standings[i-1].wins && standings[i].matches === standings[i-1].matches) {
@@ -110,7 +109,7 @@ function load_tables(LEAGUE_ID, slots) {
                 document.getElementById(`team_${i+1}_map_record`).innerHTML = `${standings[i].map_wins}-${standings[i].total_maps-standings[i].map_wins}`
             }
 
-            run_simulations(id_to_team, match_table, standings, MAJOR_SLOTS)
+            run_simulations(id_to_team, match_table, standings, MAJOR_SLOTS, 0)
 
             let curr_index = 0
             for (const [team1, value] of Object.entries(match_table)) {
@@ -163,7 +162,7 @@ function getColor(value) {
     return ["hsl(", hue, ",100%,50%)"].join("");
 }
 
-async function run_simulations(teams_dict, curr_matches, curr_standings, MAJOR_SLOTS) {
+async function run_simulations(teams_dict, curr_matches, curr_standings, MAJOR_SLOTS, update_move) {
     team_to_index = {}
     number_placement = []
     number_category = []
@@ -177,144 +176,146 @@ async function run_simulations(teams_dict, curr_matches, curr_standings, MAJOR_S
         number_placement.push(temp)
     }
 
-    loop_simuations(teams_dict, curr_matches, curr_standings, MAJOR_SLOTS, team_to_index, number_placement, number_category, 0)
+    loop_simuations(teams_dict, curr_matches, curr_standings, MAJOR_SLOTS, team_to_index, number_placement, number_category, 0, update_move)
 }
 
-async function loop_simuations(teams_dict, curr_matches, curr_standings, MAJOR_SLOTS, team_to_index, number_placement, number_category, run_number) {
-    if (run_number < NUM_OF_RUNS) {
+async function loop_simuations(teams_dict, curr_matches, curr_standings, MAJOR_SLOTS, team_to_index, number_placement, number_category, run_number, update_move) {
+    if (run_number < NUM_OF_RUNS && update_move === curr_update) {
         window.requestAnimationFrame(() => {
-        for (let run = 0; run < UPDATE_NUM; run++) {
-            const new_matches = {}
-            for (const [key, value] of Object.entries(curr_matches)) {
-                new_matches[key] = {...value}
-            }
-            for (const [team1, value] of Object.entries(new_matches)) {
-                for (const [team2, score] of Object.entries(value)) {
-                    if (score === -1) {
-                        if (Math.random() < 0.5) {
-                            new_matches[team1][team2] = 2
+            for (let run = 0; run < UPDATE_NUM; run++) {
+                const new_matches = {}
+                for (const [key, value] of Object.entries(curr_matches)) {
+                    new_matches[key] = {...value}
+                }
+                for (const [team1, value] of Object.entries(new_matches)) {
+                    for (const [team2, score] of Object.entries(value)) {
+                        if (score === -1) {
                             if (Math.random() < 0.5) {
-                                new_matches[team2][team1] = 1
+                                new_matches[team1][team2] = 2
+                                if (Math.random() < 0.5) {
+                                    new_matches[team2][team1] = 1
+                                }
+                                else {
+                                    new_matches[team2][team1] = 0
+                                }
                             }
                             else {
-                                new_matches[team2][team1] = 0
+                                new_matches[team2][team1] = 2
+                                if (Math.random() < 0.5) {
+                                    new_matches[team1][team2] = 1
+                                }
+                                else {
+                                    new_matches[team1][team2] = 0
+                                }
                             }
                         }
-                        else {
-                            new_matches[team2][team1] = 2
-                            if (Math.random() < 0.5) {
-                                new_matches[team1][team2] = 1
-                            }
-                            else {
-                                new_matches[team1][team2] = 0
-                            }
-                        }
-                    }
-                    else if (score !== 2 && new_matches[team2][team1] !== 2) {
-                        while (new_matches[team1][team2] !== 2 && new_matches[team2][team1] !== 2) {
-                            if (Math.random() < 0.5) {
-                                new_matches[team1][team2] += 1
-                            }
-                            else {
-                                new_matches[team2][team1] += 1
+                        else if (score !== 2 && new_matches[team2][team1] !== 2) {
+                            while (new_matches[team1][team2] !== 2 && new_matches[team2][team1] !== 2) {
+                                if (Math.random() < 0.5) {
+                                    new_matches[team1][team2] += 1
+                                }
+                                else {
+                                    new_matches[team2][team1] += 1
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            let new_standings = []
+                let new_standings = []
 
-            for (const [team_name, val] of Object.entries(new_matches)) {
-                let wins = 0
-                let matches = 0
-                let map_wins = 0
-                let total_maps = 0
-                for (const [opp_team, score] of Object.entries(val)) {
-                    if (score !== -1) {
-                        if (new_matches[opp_team][team_name] === 2 || score === 2) {
-                            matches += 1
+                for (const [team_name, val] of Object.entries(new_matches)) {
+                    let wins = 0
+                    let matches = 0
+                    let map_wins = 0
+                    let total_maps = 0
+                    for (const [opp_team, score] of Object.entries(val)) {
+                        if (score !== -1) {
+                            if (new_matches[opp_team][team_name] === 2 || score === 2) {
+                                matches += 1
+                            }
+                            map_wins += score
+                            total_maps += (new_matches[opp_team][team_name] + score)
+                            if (score === 2) {
+                                wins += 1
+                            }
                         }
-                        map_wins += score
-                        total_maps += (new_matches[opp_team][team_name] + score)
-                        if (score === 2) {
-                            wins += 1
+                    }
+                    new_standings.push({'wins': wins, 'matches': matches, 'map_wins': map_wins, 'total_maps': total_maps, 'team_name': team_name})
+                }
+
+                new_standings.sort(standings_sort)
+
+                let start_index = 0
+                let end_index = 0
+                let tie = false
+
+                for (let i = 1; i < new_standings.length; i++) {
+                    if (new_standings[i].wins === new_standings[i-1].wins && new_standings[i].matches === new_standings[i-1].matches) {
+                        if (!tie)
+                            start_index = i-1
+                        tie = true
+                    }
+                    else {
+                        if (tie) {
+                            tie = false
+                            end_index = i-1
+                            shuffleArray(new_standings, end_index, start_index)
                         }
                     }
                 }
-                new_standings.push({'wins': wins, 'matches': matches, 'map_wins': map_wins, 'total_maps': total_maps, 'team_name': team_name})
-            }
-
-            new_standings.sort(standings_sort)
-
-            let start_index = 0
-            let end_index = 0
-            let tie = false
-
-            for (let i = 1; i < new_standings.length; i++) {
-                if (new_standings[i].wins === new_standings[i-1].wins && new_standings[i].matches === new_standings[i-1].matches) {
-                    if (!tie)
-                        start_index = i-1
-                    tie = true
+                if (tie) {
+                    tie = false
+                    end_index = new_standings.length-1
+                    shuffleArray(new_standings, end_index, start_index)
                 }
-                else {
-                    if (tie) {
-                        tie = false
-                        end_index = i-1
-                        shuffleArray(new_standings, end_index, start_index)
+
+                for (let i = 0; i < new_standings.length; i++) {
+                    number_placement[team_to_index[new_standings[i].team_name]][i] += 1
+                    if (i < MAJOR_SLOTS) {
+                        number_category[team_to_index[new_standings[i].team_name]][0] += 1
+                    }
+                    else if (i < new_standings.length-2) {
+                        number_category[team_to_index[new_standings[i].team_name]][1] += 1
+                    }
+                    else {
+                        number_category[team_to_index[new_standings[i].team_name]][2] += 1
                     }
                 }
             }
-            if (tie) {
-                tie = false
-                end_index = new_standings.length-1
-                shuffleArray(new_standings, end_index, start_index)
+
+            run_number += UPDATE_NUM
+
+            for (let i = 0; i < number_category.length; i++) {
+                const percent1 = (number_category[i][0]*1.0 / run_number)*100
+                document.getElementById(`team_${i+1}_major_chance`).style.backgroundColor = getColor(percent1)
+                document.getElementById(`team_${i+1}_major_chance`).innerHTML = `${percent1.toFixed(2)}%`
+                const percent2 = (number_category[i][1]*1.0 / run_number)*100
+                document.getElementById(`team_${i+1}_remain_chance`).style.backgroundColor = getColor(percent2)
+                document.getElementById(`team_${i+1}_remain_chance`).innerHTML = `${percent2.toFixed(2)}%`
+                const percent3 = (number_category[i][2]*1.0 / run_number)*100
+                document.getElementById(`team_${i+1}_relegation_chance`).style.backgroundColor = getColor(percent3)
+                document.getElementById(`team_${i+1}_relegation_chance`).innerHTML = `${percent3.toFixed(2)}%`
+
+                for (let j = 0; j < number_placement[i].length; j++) {
+                    document.getElementById(`team_${i+1}_place${j+1}`).style.backgroundColor = getColor(((number_placement[i][j]*1.0 / run_number)*100))
+                    document.getElementById(`team_${i+1}_place${j+1}`).innerHTML = `${((number_placement[i][j]*1.0 / run_number)*100).toFixed(2)}%`
+                }
             }
 
-            for (let i = 0; i < new_standings.length; i++) {
-                number_placement[team_to_index[new_standings[i].team_name]][i] += 1
-                if (i < MAJOR_SLOTS) {
-                    number_category[team_to_index[new_standings[i].team_name]][0] += 1
-                }
-                else if (i < new_standings.length-2) {
-                    number_category[team_to_index[new_standings[i].team_name]][1] += 1
-                }
-                else {
-                    number_category[team_to_index[new_standings[i].team_name]][2] += 1
-                }
-            }
-        }
-
-        run_number += UPDATE_NUM
-
-        for (let i = 0; i < number_category.length; i++) {
-            const percent1 = (number_category[i][0]*1.0 / run_number)*100
-            document.getElementById(`team_${i+1}_major_chance`).style.backgroundColor = getColor(percent1)
-            document.getElementById(`team_${i+1}_major_chance`).innerHTML = `${percent1.toFixed(2)}%`
-            const percent2 = (number_category[i][1]*1.0 / run_number)*100
-            document.getElementById(`team_${i+1}_remain_chance`).style.backgroundColor = getColor(percent2)
-            document.getElementById(`team_${i+1}_remain_chance`).innerHTML = `${percent2.toFixed(2)}%`
-            const percent3 = (number_category[i][2]*1.0 / run_number)*100
-            document.getElementById(`team_${i+1}_relegation_chance`).style.backgroundColor = getColor(percent3)
-            document.getElementById(`team_${i+1}_relegation_chance`).innerHTML = `${percent3.toFixed(2)}%`
-
-            for (let j = 0; j < number_placement[i].length; j++) {
-                document.getElementById(`team_${i+1}_place${j+1}`).style.backgroundColor = getColor(((number_placement[i][j]*1.0 / run_number)*100))
-                document.getElementById(`team_${i+1}_place${j+1}`).innerHTML = `${((number_placement[i][j]*1.0 / run_number)*100).toFixed(2)}%`
-            }
-        }
-
-        loop_simuations(teams_dict, curr_matches, curr_standings, MAJOR_SLOTS, team_to_index, number_placement, number_category, run_number)
+            loop_simuations(teams_dict, curr_matches, curr_standings, MAJOR_SLOTS, team_to_index, number_placement, number_category, run_number, update_move)
         })
     }
 
-    console.log(number_placement)
+    // console.log(number_placement)
 }
 
 async function change_score(id) {
     const curr_team = parseInt(id.charAt(5))
     const match_num = parseInt(id.charAt(12))
     const team1 = id.indexOf('opp') === -1
+
+    curr_update += 1
 
     const team_name = document.getElementById(`team_${curr_team}_match${match_num}_team1name`).innerHTML
     const opp_name = document.getElementById(`team_${curr_team}_match${match_num}_oppname`).innerHTML
@@ -438,10 +439,10 @@ async function change_score(id) {
         }
     }
 
-    await change_standings()
+    await change_standings(curr_update)
 }
 
-async function change_standings() {
+async function change_standings(curr_move) {
     let standings = []
 
     for (const [team_name, val] of Object.entries(match_table)) {
@@ -477,7 +478,7 @@ async function change_standings() {
         document.getElementById(`team_${i+1}_record`).innerHTML = `${standings[i].wins}-${standings[i].matches-standings[i].wins}`
         document.getElementById(`team_${i+1}_map_record`).innerHTML = `${standings[i].map_wins}-${standings[i].total_maps-standings[i].map_wins}`
     }
-    await run_simulations(id_to_team, match_table, standings, MAJOR_SLOTS)
+    await run_simulations(id_to_team, match_table, standings, MAJOR_SLOTS, curr_move)
 }
 
 function shuffleArray(array, start, end) {
