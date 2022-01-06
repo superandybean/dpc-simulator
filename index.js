@@ -8,10 +8,14 @@ let WILD_CARD = 0
 let GROUP_STAGE = 0
 let PLAYOFF = 0
 
+const tied_places = new Set()
+
 const original_matches = {}
 
 const NUM_OF_RUNS = 10000
 const UPDATE_NUM = 250
+
+const dividing_lines = []
 
 let curr_update = 0
 
@@ -20,6 +24,17 @@ function load_tables(LEAGUE_ID, playoff, groups, wild) {
     GROUP_STAGE = groups
     WILD_CARD = wild
     MAJOR_SLOTS = PLAYOFF + GROUP_STAGE + WILD_CARD
+
+    dividing_lines.push(0)
+    dividing_lines.push(PLAYOFF)
+    if (GROUP_STAGE !== 0) {
+        dividing_lines.push(dividing_lines[dividing_lines.length-1]+GROUP_STAGE)
+    }
+    if (WILD_CARD !== 0) {
+        dividing_lines.push(dividing_lines[dividing_lines.length-1]+WILD_CARD)
+    }
+    dividing_lines.push(6)
+    // console.log(dividing_lines)
 
     let teams_request = new XMLHttpRequest();
     teams_request.open('GET', `https://api.opendota.com/api/leagues/${LEAGUE_ID}/teams`);
@@ -57,6 +72,10 @@ function load_tables(LEAGUE_ID, playoff, groups, wild) {
                     continue
                 }
             }
+            if (data[i].team_id === 8261500) { //because xtreme gaming is cringe
+                data[i].name = "Xtreme Gaming"
+            }
+
             id_to_team[data[i].team_id] = data[i].name
             team_to_id[data[i].name] = data[i].team_id
             match_table[data[i].team_id] = {}
@@ -72,8 +91,6 @@ function load_tables(LEAGUE_ID, playoff, groups, wild) {
             }
             team_to_img[data[i].team_id] = data[i].logo_url
         }
-
-        // console.log(id_to_team)
 
         let matches_request = new XMLHttpRequest();
         matches_request.open('GET', `https://api.opendota.com/api/leagues/${LEAGUE_ID}/matches`)
@@ -157,12 +174,94 @@ function load_tables(LEAGUE_ID, playoff, groups, wild) {
 
             standings.sort(standings_sort)
 
+            tied_places.clear()
+
+            let start_index = 0
+            let end_index = 0
+            let tie = false
+
+            let curr_dividing_index = 0 // find way to use this
+
+            for (let i = 1; i < standings.length; i++) {
+                if (standings[i].wins === standings[i-1].wins && standings[i].matches === standings[i-1].matches) {
+                    if (!tie)
+                        start_index = i-1
+                    tie = true
+                }
+                else {
+                    if (tie) {
+                        tie = false
+                        end_index = i-1
+
+                        let divide_tie = false
+
+                        for (let j = 0; j < dividing_lines.length; j++) {
+                            if (start_index < dividing_lines[j] && dividing_lines[j] <= end_index) {
+                                divide_tie = true
+                                break
+                            }
+                        }
+
+                        // console.log(start_index, end_index, divide_tie)
+
+                        if (divide_tie) {
+                            shuffleArray(standings, end_index, start_index)
+                        }
+                        else {
+                            let divided_teams = []
+                            for (let k = start_index; k <= end_index; k++) {
+                                divided_teams.push(standings[k])
+                            }
+
+                            const new_tiebreak = tiebreak_logic(match_table, divided_teams)
+                            for (let ind = 0; ind < new_tiebreak.length; ind++) {
+                                standings[ind+start_index] = new_tiebreak[ind]
+                            }
+                        }
+                    }
+                }
+            }
+            if (tie) {
+                tie = false
+                end_index = standings.length-1
+
+                let divide_tie = false
+
+                for (let j = 0; j < dividing_lines.length; j++) {
+                    if (start_index < dividing_lines[j] && dividing_lines[j] <= end_index) {
+                        divide_tie = true
+                        break
+                    }
+                }
+
+                if (divide_tie) {
+                    shuffleArray(standings, end_index, start_index)
+                }
+                else {
+                    let divided_teams = []
+                    for (let k = start_index; k <= end_index; k++) {
+                        divided_teams.push(standings[k])
+                    }
+
+                    const new_tiebreak = tiebreak_logic(match_table, divided_teams)
+                    for (let ind = 0; ind < new_tiebreak.length; ind++) {
+                        standings[ind+start_index] = new_tiebreak[ind]
+                    }
+                }
+            }
+
             run_simulations(id_to_team, match_table, standings, MAJOR_SLOTS, 0)
 
             // console.log(standings)
 
             for (let i = 0; i < standings.length; i++) {
-                if (i > 0 && standings[i].wins === standings[i-1].wins && standings[i].matches === standings[i-1].matches) {
+                // if (i > 0 && standings[i].wins === standings[i-1].wins && standings[i].matches === standings[i-1].matches) {
+                //     document.getElementById(`team_${i+1}_place`).innerHTML = document.getElementById(`team_${i}_place`).innerHTML
+                // }
+                // else {
+                    // document.getElementById(`team_${i+1}_place`).innerHTML = (i+1) + "."
+                // }
+                if (i > 0 && standings[i].wins === standings[i-1].wins && tied_places.has(standings[i].team_name)) {
                     document.getElementById(`team_${i+1}_place`).innerHTML = document.getElementById(`team_${i}_place`).innerHTML
                 }
                 else {
@@ -352,9 +451,13 @@ async function loop_simuations(teams_dict, curr_matches, curr_standings, MAJOR_S
 
                 new_standings.sort(standings_sort)
 
+                tied_places.clear()
+
                 let start_index = 0
                 let end_index = 0
                 let tie = false
+
+                let curr_dividing_index = 0 // find way to use this
 
                 for (let i = 1; i < new_standings.length; i++) {
                     if (new_standings[i].wins === new_standings[i-1].wins && new_standings[i].matches === new_standings[i-1].matches) {
@@ -366,14 +469,62 @@ async function loop_simuations(teams_dict, curr_matches, curr_standings, MAJOR_S
                         if (tie) {
                             tie = false
                             end_index = i-1
-                            shuffleArray(new_standings, end_index, start_index)
+
+                            let divide_tie = false
+
+                            for (let j = 0; j < dividing_lines.length; j++) {
+                                if (start_index < dividing_lines[j] && dividing_lines[j] <= end_index) {
+                                    divide_tie = true
+                                    break
+                                }
+                            }
+
+                            // console.log(start_index, end_index, divide_tie)
+
+                            if (divide_tie) {
+                                shuffleArray(new_standings, end_index, start_index)
+                            }
+                            else {
+                                let divided_teams = []
+                                for (let k = start_index; k <= end_index; k++) {
+                                    divided_teams.push(new_standings[k])
+                                }
+
+                                const new_tiebreak = tiebreak_logic(new_matches, divided_teams)
+                                for (let ind = 0; ind < new_tiebreak.length; ind++) {
+                                    new_standings[ind+start_index] = new_tiebreak[ind]
+                                }
+                            }
                         }
                     }
                 }
                 if (tie) {
                     tie = false
                     end_index = new_standings.length-1
-                    shuffleArray(new_standings, end_index, start_index)
+
+                    let divide_tie = false
+
+                    for (let j = 0; j < dividing_lines.length; j++) {
+                        if (start_index < dividing_lines[j] && dividing_lines[j] <= end_index) {
+                            divide_tie = true
+                            break
+                        }
+                    }
+
+                    if (divide_tie) {
+                        shuffleArray(new_standings, end_index, start_index)
+                    }
+                    else {
+                        let divided_teams = []
+                        for (let k = start_index; k <= end_index; k++) {
+                            divided_teams.push(new_standings[k])
+                        }
+
+                        const new_tiebreak = tiebreak_logic(new_matches, divided_teams)
+                        for (let ind = 0; ind < new_tiebreak.length; ind++) {
+                            new_standings[ind+start_index] = new_tiebreak[ind]
+                        }
+                    }
                 }
 
                 for (let i = 0; i < new_standings.length; i++) {
@@ -440,6 +591,152 @@ async function loop_simuations(teams_dict, curr_matches, curr_standings, MAJOR_S
     // console.log(number_placement)
 }
 
+function tiebreak_logic(matches, tiebreak_teams) {
+    // console.log(tiebreak_teams)
+    const h2h_score = []
+    const h2h_maps = {}
+    const map_diff_total = {}
+    const team_order = []
+    for (let i = 0; i < tiebreak_teams.length+1; i++) {
+        h2h_score.push([])
+    }
+
+    for (let i = 0; i < tiebreak_teams.length; i++) {
+        let curr_score = 0
+        let map_diff = 0
+        for (let j = 0; j < tiebreak_teams.length; j++) {
+            if (j === i) continue
+            if (matches[tiebreak_teams[i].team_name][tiebreak_teams[j].team_name] === -1) continue
+            // console.log(tiebreak_teams[i], tiebreak_teams[j])
+            if (matches[tiebreak_teams[i].team_name][tiebreak_teams[j].team_name] === 2) {
+                curr_score += 1
+            }
+            map_diff += (matches[tiebreak_teams[i].team_name][tiebreak_teams[j].team_name] - matches[tiebreak_teams[j].team_name][tiebreak_teams[i].team_name])
+        }
+
+        h2h_score[curr_score].push(tiebreak_teams[i])
+
+        if (!(map_diff in h2h_maps)) {
+            h2h_maps[map_diff] = []
+        }
+        h2h_maps[map_diff].push(tiebreak_teams[i])
+    }
+
+    // console.log(h2h_score)
+    // console.log(h2h_maps)
+
+    let next_step = false
+
+    for (let i = h2h_score.length-1; i >= 0; i--) {
+        if (h2h_score[i].length > 0) {
+            if (h2h_score[i].length === 1) {
+                team_order.push(h2h_score[i][0])
+            }
+            else {
+                if (h2h_score[i].length === tiebreak_teams.length) {
+                    next_step = true
+                    break
+                }
+                else {
+                    const new_tiebreak = tiebreak_logic(matches, h2h_score[i])
+                    for (let j = 0; j < new_tiebreak.length; j++) {
+                        team_order.push(new_tiebreak[j])
+                    }
+                }
+            }
+        }
+    }
+
+    // console.log(team_order)
+
+    if (!next_step) {
+        return team_order
+    }
+
+    next_step = false
+
+    for (let i = tiebreak_teams.length*2; i >= tiebreak_teams.length*-2; i--) {
+        if (i in h2h_maps) {
+            if (h2h_maps[i].length === 1) {
+                team_order.push(h2h_maps[i][0])
+            }
+            else {
+                if (h2h_maps[i].length === tiebreak_teams.length) {
+                    next_step = true
+                    break
+                }
+                else {
+                    const new_tiebreak = tiebreak_logic(matches, h2h_maps[i])
+                    for (let j = 0; j < new_tiebreak.length; j++) {
+                        team_order.push(new_tiebreak[j])
+                    }
+                }
+            }
+        }
+    }
+
+    // console.log(team_order)
+
+    if (!next_step) {
+        return team_order
+    }
+
+    for (let i = 0; i < tiebreak_teams.length; i++) {
+        let curr_score = 0
+
+        for (const [team2, score] of Object.entries(matches[tiebreak_teams[i].team_name])) {
+            if (matches[tiebreak_teams[i].team_name][team2] === -1) continue
+            curr_score += (matches[tiebreak_teams[i].team_name][team2] - matches[team2][tiebreak_teams[i].team_name])
+        }
+
+        // console.log(curr_score)
+
+        if (!(curr_score in map_diff_total)) {
+            map_diff_total[curr_score] = []
+        }
+        map_diff_total[curr_score].push(tiebreak_teams[i])
+    }
+
+    // console.log(map_diff_total)
+
+    next_step = false
+
+    for (let i = 14; i >= -14; i--) {
+        if (i in map_diff_total) {
+            if (map_diff_total[i].length === 1) {
+                team_order.push(map_diff_total[i][0])
+            }
+            else {
+                if (map_diff_total[i].length === tiebreak_teams.length) {
+                    next_step = true
+                    break
+                }
+                else {
+                    const new_tiebreak = tiebreak_logic(matches, map_diff_total[i])
+                    for (let j = 0; j < new_tiebreak.length; j++) {
+                        team_order.push(new_tiebreak[j])
+                    }
+                }
+            }
+        }
+    }
+
+    // console.log(team_order)
+
+    if (!next_step) {
+        return team_order
+    }
+
+    // console.log(team_order)
+
+    for (let i = 0; i < tiebreak_teams.length; i++) {
+        tied_places.add(tiebreak_teams[i].team_name)
+    }
+
+    shuffleArray(tiebreak_teams, tiebreak_teams.length-1, 0)
+    return tiebreak_teams
+}
+
 async function change_score(id) {
     const curr_team = parseInt(id.charAt(5))
     const match_num = parseInt(id.charAt(12))
@@ -449,6 +746,8 @@ async function change_score(id) {
 
     const team_name = document.getElementById(`team_${curr_team}_match${match_num}_team1name`).innerHTML
     const opp_name = document.getElementById(`team_${curr_team}_match${match_num}_oppname`).innerHTML
+
+    // console.log(team_name, opp_name)
 
     if (team1) {
         if (parseInt(document.getElementById(`team_${curr_team}_match${match_num}_oppscore`).innerHTML) === 2) {
@@ -597,13 +896,96 @@ async function change_standings(curr_move) {
 
     standings.sort(standings_sort)
 
+    tied_places.clear()
+
+    let start_index = 0
+    let end_index = 0
+    let tie = false
+
+    let curr_dividing_index = 0 // find way to use this
+
+    for (let i = 1; i < standings.length; i++) {
+        if (standings[i].wins === standings[i-1].wins && standings[i].matches === standings[i-1].matches) {
+            if (!tie)
+                start_index = i-1
+            tie = true
+        }
+        else {
+            if (tie) {
+                tie = false
+                end_index = i-1
+
+                let divide_tie = false
+
+                for (let j = 0; j < dividing_lines.length; j++) {
+                    if (start_index < dividing_lines[j] && dividing_lines[j] <= end_index) {
+                        divide_tie = true
+                        break
+                    }
+                }
+
+                // console.log(start_index, end_index, divide_tie)
+
+                if (divide_tie) {
+                    shuffleArray(standings, end_index, start_index)
+                }
+                else {
+                    let divided_teams = []
+                    for (let k = start_index; k <= end_index; k++) {
+                        divided_teams.push(standings[k])
+                    }
+
+                    const new_tiebreak = tiebreak_logic(match_table, divided_teams)
+                    for (let ind = 0; ind < new_tiebreak.length; ind++) {
+                        standings[ind+start_index] = new_tiebreak[ind]
+                    }
+                }
+            }
+        }
+    }
+    if (tie) {
+        tie = false
+        end_index = standings.length-1
+
+        let divide_tie = false
+
+        for (let j = 0; j < dividing_lines.length; j++) {
+            if (start_index < dividing_lines[j] && dividing_lines[j] <= end_index) {
+                divide_tie = true
+                break
+            }
+        }
+
+        if (divide_tie) {
+            shuffleArray(standings, end_index, start_index)
+        }
+        else {
+            let divided_teams = []
+            for (let k = start_index; k <= end_index; k++) {
+                divided_teams.push(standings[k])
+            }
+
+            const new_tiebreak = tiebreak_logic(match_table, divided_teams)
+            for (let ind = 0; ind < new_tiebreak.length; ind++) {
+                standings[ind+start_index] = new_tiebreak[ind]
+            }
+        }
+    }
+
     for (let i = 0; i < standings.length; i++) {
-        if (i > 0 && standings[i].wins === standings[i-1].wins && standings[i].matches === standings[i-1].matches) {
+        // if (i > 0 && standings[i].wins === standings[i-1].wins && standings[i].matches === standings[i-1].matches) {
+        //     document.getElementById(`team_${i+1}_place`).innerHTML = document.getElementById(`team_${i}_place`).innerHTML
+        // }
+        // else {
+        //     document.getElementById(`team_${i+1}_place`).innerHTML = (i+1) + "."
+        // }
+        if (i > 0 && standings[i].wins === standings[i-1].wins && tied_places.has(standings[i].team_name)) {
             document.getElementById(`team_${i+1}_place`).innerHTML = document.getElementById(`team_${i}_place`).innerHTML
         }
         else {
             document.getElementById(`team_${i+1}_place`).innerHTML = (i+1) + "."
         }
+
         document.getElementById(`team_${i+1}_name`).innerHTML = id_to_team[standings[i].team_name]
         document.getElementById(`team_${i+1}_record`).innerHTML = `${standings[i].wins}-${standings[i].matches-standings[i].wins}`
         document.getElementById(`team_${i+1}_map_record`).innerHTML = `${standings[i].map_wins}-${standings[i].total_maps-standings[i].map_wins}`
@@ -709,16 +1091,99 @@ function reset_team(id) {
 
     standings.sort(standings_sort)
 
+    tied_places.clear()
+
+    let start_index = 0
+    let end_index = 0
+    let tie = false
+
+    let curr_dividing_index = 0 // find way to use this
+
+    for (let i = 1; i < standings.length; i++) {
+        if (standings[i].wins === standings[i-1].wins && standings[i].matches === standings[i-1].matches) {
+            if (!tie)
+                start_index = i-1
+            tie = true
+        }
+        else {
+            if (tie) {
+                tie = false
+                end_index = i-1
+
+                let divide_tie = false
+
+                for (let j = 0; j < dividing_lines.length; j++) {
+                    if (start_index < dividing_lines[j] && dividing_lines[j] <= end_index) {
+                        divide_tie = true
+                        break
+                    }
+                }
+
+                // console.log(start_index, end_index, divide_tie)
+
+                if (divide_tie) {
+                    shuffleArray(standings, end_index, start_index)
+                }
+                else {
+                    let divided_teams = []
+                    for (let k = start_index; k <= end_index; k++) {
+                        divided_teams.push(standings[k])
+                    }
+
+                    const new_tiebreak = tiebreak_logic(match_table, divided_teams)
+                    for (let ind = 0; ind < new_tiebreak.length; ind++) {
+                        standings[ind+start_index] = new_tiebreak[ind]
+                    }
+                }
+            }
+        }
+    }
+    if (tie) {
+        tie = false
+        end_index = standings.length-1
+
+        let divide_tie = false
+
+        for (let j = 0; j < dividing_lines.length; j++) {
+            if (start_index < dividing_lines[j] && dividing_lines[j] <= end_index) {
+                divide_tie = true
+                break
+            }
+        }
+
+        if (divide_tie) {
+            shuffleArray(standings, end_index, start_index)
+        }
+        else {
+            let divided_teams = []
+            for (let k = start_index; k <= end_index; k++) {
+                divided_teams.push(standings[k])
+            }
+
+            const new_tiebreak = tiebreak_logic(match_table, divided_teams)
+            for (let ind = 0; ind < new_tiebreak.length; ind++) {
+                standings[ind+start_index] = new_tiebreak[ind]
+            }
+        }
+    }
+
     curr_update += 1
     run_simulations(id_to_team, match_table, standings, MAJOR_SLOTS, curr_update)
 
     for (let i = 0; i < standings.length; i++) {
-        if (i > 0 && standings[i].wins === standings[i-1].wins && standings[i].matches === standings[i-1].matches) {
+        // if (i > 0 && standings[i].wins === standings[i-1].wins && standings[i].matches === standings[i-1].matches) {
+        //     document.getElementById(`team_${i+1}_place`).innerHTML = document.getElementById(`team_${i}_place`).innerHTML
+        // }
+        // else {
+        //     document.getElementById(`team_${i+1}_place`).innerHTML = (i+1) + "."
+        // }
+        if (i > 0 && standings[i].wins === standings[i-1].wins && tied_places.has(standings[i].team_name)) {
             document.getElementById(`team_${i+1}_place`).innerHTML = document.getElementById(`team_${i}_place`).innerHTML
         }
         else {
             document.getElementById(`team_${i+1}_place`).innerHTML = (i+1) + "."
         }
+
         document.getElementById(`team_${i+1}_name`).innerHTML = id_to_team[standings[i].team_name]
         document.getElementById(`team_${i+1}_record`).innerHTML = `${standings[i].wins}-${standings[i].matches-standings[i].wins}`
         document.getElementById(`team_${i+1}_map_record`).innerHTML = `${standings[i].map_wins}-${standings[i].total_maps-standings[i].map_wins}`
@@ -786,16 +1251,99 @@ function reset_all() {
 
     standings.sort(standings_sort)
 
+    tied_places.clear()
+
+    let start_index = 0
+    let end_index = 0
+    let tie = false
+
+    let curr_dividing_index = 0 // find way to use this
+
+    for (let i = 1; i < standings.length; i++) {
+        if (standings[i].wins === standings[i-1].wins && standings[i].matches === standings[i-1].matches) {
+            if (!tie)
+                start_index = i-1
+            tie = true
+        }
+        else {
+            if (tie) {
+                tie = false
+                end_index = i-1
+
+                let divide_tie = false
+
+                for (let j = 0; j < dividing_lines.length; j++) {
+                    if (start_index < dividing_lines[j] && dividing_lines[j] <= end_index) {
+                        divide_tie = true
+                        break
+                    }
+                }
+
+                // console.log(start_index, end_index, divide_tie)
+
+                if (divide_tie) {
+                    shuffleArray(standings, end_index, start_index)
+                }
+                else {
+                    let divided_teams = []
+                    for (let k = start_index; k <= end_index; k++) {
+                        divided_teams.push(standings[k])
+                    }
+
+                    const new_tiebreak = tiebreak_logic(match_table, divided_teams)
+                    for (let ind = 0; ind < new_tiebreak.length; ind++) {
+                        standings[ind+start_index] = new_tiebreak[ind]
+                    }
+                }
+            }
+        }
+    }
+    if (tie) {
+        tie = false
+        end_index = standings.length-1
+
+        let divide_tie = false
+
+        for (let j = 0; j < dividing_lines.length; j++) {
+            if (start_index < dividing_lines[j] && dividing_lines[j] <= end_index) {
+                divide_tie = true
+                break
+            }
+        }
+
+        if (divide_tie) {
+            shuffleArray(standings, end_index, start_index)
+        }
+        else {
+            let divided_teams = []
+            for (let k = start_index; k <= end_index; k++) {
+                divided_teams.push(standings[k])
+            }
+
+            const new_tiebreak = tiebreak_logic(match_table, divided_teams)
+            for (let ind = 0; ind < new_tiebreak.length; ind++) {
+                standings[ind+start_index] = new_tiebreak[ind]
+            }
+        }
+    }
+
     curr_update += 1
     run_simulations(id_to_team, match_table, standings, MAJOR_SLOTS, curr_update)
 
     for (let i = 0; i < standings.length; i++) {
-        if (i > 0 && standings[i].wins === standings[i-1].wins && standings[i].matches === standings[i-1].matches) {
+        // if (i > 0 && standings[i].wins === standings[i-1].wins && standings[i].matches === standings[i-1].matches) {
+        //     document.getElementById(`team_${i+1}_place`).innerHTML = document.getElementById(`team_${i}_place`).innerHTML
+        // }
+        // else {
+        //     document.getElementById(`team_${i+1}_place`).innerHTML = (i+1) + "."
+        // }
+        if (i > 0 && standings[i].wins === standings[i-1].wins && tied_places.has(standings[i].team_name)) {
             document.getElementById(`team_${i+1}_place`).innerHTML = document.getElementById(`team_${i}_place`).innerHTML
         }
         else {
             document.getElementById(`team_${i+1}_place`).innerHTML = (i+1) + "."
         }
+
         document.getElementById(`team_${i+1}_name`).innerHTML = id_to_team[standings[i].team_name]
         document.getElementById(`team_${i+1}_record`).innerHTML = `${standings[i].wins}-${standings[i].matches-standings[i].wins}`
         document.getElementById(`team_${i+1}_map_record`).innerHTML = `${standings[i].map_wins}-${standings[i].total_maps-standings[i].map_wins}`
