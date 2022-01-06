@@ -205,6 +205,9 @@ function load_tables(LEAGUE_ID, playoff, groups, wild) {
                         // console.log(start_index, end_index, divide_tie)
 
                         if (divide_tie) {
+                            for (let ind = start_index; ind <= end_index; ind++) {
+                                tied_places.add(standings[ind].team_name)
+                            }
                             shuffleArray(standings, end_index, start_index)
                         }
                         else {
@@ -235,6 +238,9 @@ function load_tables(LEAGUE_ID, playoff, groups, wild) {
                 }
 
                 if (divide_tie) {
+                    for (let ind = start_index; ind <= end_index; ind++) {
+                        tied_places.add(standings[ind].team_name)
+                    }
                     shuffleArray(standings, end_index, start_index)
                 }
                 else {
@@ -927,6 +933,9 @@ async function change_standings(curr_move) {
                 // console.log(start_index, end_index, divide_tie)
 
                 if (divide_tie) {
+                    for (let ind = start_index; ind <= end_index; ind++) {
+                        tied_places.add(standings[ind].team_name)
+                    }
                     shuffleArray(standings, end_index, start_index)
                 }
                 else {
@@ -957,6 +966,9 @@ async function change_standings(curr_move) {
         }
 
         if (divide_tie) {
+            for (let ind = start_index; ind <= end_index; ind++) {
+                tied_places.add(standings[ind].team_name)
+            }
             shuffleArray(standings, end_index, start_index)
         }
         else {
@@ -971,7 +983,6 @@ async function change_standings(curr_move) {
             }
         }
     }
-
     for (let i = 0; i < standings.length; i++) {
         // if (i > 0 && standings[i].wins === standings[i-1].wins && standings[i].matches === standings[i-1].matches) {
         //     document.getElementById(`team_${i+1}_place`).innerHTML = document.getElementById(`team_${i}_place`).innerHTML
@@ -1122,6 +1133,9 @@ function reset_team(id) {
                 // console.log(start_index, end_index, divide_tie)
 
                 if (divide_tie) {
+                    for (let ind = start_index; ind <= end_index; ind++) {
+                        tied_places.add(standings[ind].team_name)
+                    }
                     shuffleArray(standings, end_index, start_index)
                 }
                 else {
@@ -1152,6 +1166,9 @@ function reset_team(id) {
         }
 
         if (divide_tie) {
+            for (let ind = start_index; ind <= end_index; ind++) {
+                tied_places.add(standings[ind].team_name)
+            }
             shuffleArray(standings, end_index, start_index)
         }
         else {
@@ -1282,6 +1299,9 @@ function reset_all() {
                 // console.log(start_index, end_index, divide_tie)
 
                 if (divide_tie) {
+                    for (let ind = start_index; ind <= end_index; ind++) {
+                        tied_places.add(standings[ind].team_name)
+                    }
                     shuffleArray(standings, end_index, start_index)
                 }
                 else {
@@ -1312,6 +1332,9 @@ function reset_all() {
         }
 
         if (divide_tie) {
+            for (let ind = start_index; ind <= end_index; ind++) {
+                tied_places.add(standings[ind].team_name)
+            }
             shuffleArray(standings, end_index, start_index)
         }
         else {
