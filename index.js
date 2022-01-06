@@ -336,17 +336,41 @@ async function loop_simuations(teams_dict, curr_matches, curr_standings, MAJOR_S
                 const percent1 = (number_category[i][0]*1.0 / run_number)*100
                 document.getElementById(`team_${i+1}_major_chance`).style.backgroundColor = getColor(percent1)
                 document.getElementById(`team_${i+1}_major_chance`).innerHTML = `${percent1.toFixed(2)}%`
+                document.getElementById(`team_${i+1}_major_chance`).classList.remove("font-bold")
+
                 const percent2 = (number_category[i][1]*1.0 / run_number)*100
                 document.getElementById(`team_${i+1}_remain_chance`).style.backgroundColor = getColor(percent2)
                 document.getElementById(`team_${i+1}_remain_chance`).innerHTML = `${percent2.toFixed(2)}%`
+                document.getElementById(`team_${i+1}_remain_chance`).classList.remove("font-bold")
+
                 const percent3 = (number_category[i][2]*1.0 / run_number)*100
                 document.getElementById(`team_${i+1}_relegation_chance`).style.backgroundColor = getColor(percent3)
                 document.getElementById(`team_${i+1}_relegation_chance`).innerHTML = `${percent3.toFixed(2)}%`
+                document.getElementById(`team_${i+1}_relegation_chance`).classList.remove("font-bold")
 
+                if (percent1 > percent2 && percent1 > percent3) {
+                    document.getElementById(`team_${i+1}_major_chance`).classList.add("font-bold")
+                }
+                else if (percent2 > percent1 && percent2 > percent3) {
+                    document.getElementById(`team_${i+1}_remain_chance`).classList.add("font-bold")
+                }
+                else if (percent3 > percent1 && percent3 > percent2) {
+                    document.getElementById(`team_${i+1}_relegation_chance`).classList.add("font-bold")
+                }
+
+                let max_index = -1
+                let max_num = -1
                 for (let j = 0; j < number_placement[i].length; j++) {
                     document.getElementById(`team_${i+1}_place${j+1}`).style.backgroundColor = getColor(((number_placement[i][j]*1.0 / run_number)*100))
                     document.getElementById(`team_${i+1}_place${j+1}`).innerHTML = `${((number_placement[i][j]*1.0 / run_number)*100).toFixed(2)}%`
+                    document.getElementById(`team_${i+1}_place${j+1}`).classList.remove("font-bold")
+
+                    if (number_placement[i][j] > max_num) {
+                        max_num = number_placement[i][j]
+                        max_index = j
+                    }
                 }
+                document.getElementById(`team_${i+1}_place${max_index+1}`).classList.add("font-bold")
             }
 
             loop_simuations(teams_dict, curr_matches, curr_standings, MAJOR_SLOTS, team_to_index, number_placement, number_category, run_number, update_move)
@@ -354,10 +378,26 @@ async function loop_simuations(teams_dict, curr_matches, curr_standings, MAJOR_S
     }
 
     // console.log(number_placement)
+
+    document.getElementById("round_robin_table").style.animation = "0.5s slidedown"
+    document.getElementById("round_robin_table").style.animationFillMode = "forwards"
+
+    document.getElementById("category_table").style.animation = "0.5s slidedown"
+    document.getElementById("category_table").style.animationDelay = "0.05s"
+    document.getElementById("category_table").style.animationFillMode = "forwards"
+
+    document.getElementById("place_table").style.animation = "0.5s slidedown"
+    document.getElementById("place_table").style.animationDelay = "0.1s"
+    document.getElementById("place_table").style.animationFillMode = "forwards"
+
+    for (let i = 0; i < 8; i++) {
+        document.getElementById(`team_${i+1}_div`).style.animation = "0.5s slidedown"
+        document.getElementById(`team_${i+1}_div`).style.animationDelay = `${0.15+(0.05*i)}s`
+        document.getElementById(`team_${i+1}_div`).style.animationFillMode = "forwards"
+    }
 }
 
 async function change_score(id) {
-    console.log(id)
     const curr_team = parseInt(id.charAt(5))
     const match_num = parseInt(id.charAt(12))
     const team1 = id.indexOf('opp') === -1

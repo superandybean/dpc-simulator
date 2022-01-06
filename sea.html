@@ -5,7 +5,7 @@
 		<script src="https://cdn.tailwindcss.com"></script>
 		<title>DPC Simulator - Southeast Asia: Divison I</title>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-		<link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="styles.css">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<script src="index.js"></script>
 	</head>
@@ -32,7 +32,7 @@
         <div class="w-full flex-shrink-0">
 			<div class="text-center font-normal pt-4 pb-2 flex flex-row items-center justify-center">
 				<div class="pl-4">
-					API Data from <a href="https://docs.opendota.com/" class="text-blue-700">OpenDota</a>
+					API Data from <a target="_blank" rel="noopener noreferrer" href="https://docs.opendota.com/" class="text-blue-700">OpenDota</a>
 				</div>
 				<div class="pl-4">
 					<a target="_blank" rel="noopener noreferrer" href="https://github.com/superandybean/dpc-simulator" class="text-blue-700">Open Source</a>
@@ -42,6 +42,23 @@
     </body>
     <script src="generate_page.js"></script>
 	<script>
+        generate(false)
+
+        document.getElementById("place_1").innerHTML = "1 (PO)"
+        document.getElementById("place_1").title = "Major Playoff Slot"
+
+        document.getElementById("place_2").innerHTML = "2 (GS)"
+        document.getElementById("place_2").title = "Major Group Stage Slot"
+
+        document.getElementById("place_3").innerHTML = "3 (WC)"
+        document.getElementById("place_3").title = "Major Wild Card Slot"
+
+        document.getElementById("place_7").innerHTML = "7 (R)"
+        document.getElementById("place_7").title = "Relegated to Division II"
+
+        document.getElementById("place_8").innerHTML = "8 (R)"
+        document.getElementById("place_8").title = "Relegated to Division II"
+
 		load_tables(13747, 3)
 	</script>
 </html>

@@ -32,7 +32,7 @@
         <div class="w-full flex-shrink-0">
 			<div class="text-center font-normal pt-4 pb-2 flex flex-row items-center justify-center">
 				<div class="pl-4">
-					API Data from <a href="https://docs.opendota.com/" class="text-blue-700">OpenDota</a>
+					API Data from <a target="_blank" rel="noopener noreferrer" href="https://docs.opendota.com/" class="text-blue-700">OpenDota</a>
 				</div>
 				<div class="pl-4">
 					<a target="_blank" rel="noopener noreferrer" href="https://github.com/superandybean/dpc-simulator" class="text-blue-700">Open Source</a>
@@ -40,8 +40,22 @@
 			</div>
 		</div>
     </body>
-	<script src="generate_page_div2.js"></script>
+	<script src="generate_page.js"></script>
 	<script>
+		generate(true)
+
+		document.getElementById("place_1").innerHTML = "1 (P)"
+		document.getElementById("place_1").title = "Promoted to Division I"
+
+		document.getElementById("place_2").innerHTML = "2 (P)"
+		document.getElementById("place_2").title = "Promoted to Division I"
+
+		document.getElementById("place_7").innerHTML = "7 (E)"
+		document.getElementById("place_7").title = "Eliminated"
+
+		document.getElementById("place_8").innerHTML = "8 (E)"
+		document.getElementById("place_8").title = "Eliminated"
+
 		load_tables(13742, 2)
 	</script>
 </html>
