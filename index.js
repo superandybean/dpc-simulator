@@ -5,6 +5,8 @@ const team_to_img = {}
 const find_match_index = {}
 let MAJOR_SLOTS = 0
 
+const original_matches = {}
+
 const NUM_OF_RUNS = 10000
 const UPDATE_NUM = 250
 
@@ -117,6 +119,11 @@ function load_tables(LEAGUE_ID, slots) {
             //
 
             console.log(match_table)
+
+            for (const [key, value] of Object.entries(match_table)) {
+                original_matches[key] = {...value}
+            }
+
             let standings = []
 
             for (const [team_name, val] of Object.entries(match_table)) {
@@ -165,33 +172,79 @@ function load_tables(LEAGUE_ID, slots) {
                 document.getElementById(`team_${curr_index+1}_matches_name`).innerHTML = id_to_team[team1]
                 document.getElementById(`team_${curr_index+1}_icon`).src = team_to_img[team1]
                 let match_index = 0
+
+                let completed = [] // more efficient sols possible
+                let upcoming = []
+
                 for (const [team2, score] of Object.entries(value)) {
-                    find_match_index[id_to_team[team1]][id_to_team[team2]] = [curr_index+1, match_index+1]
                     if (score === -1) {
-                        document.getElementById(`team_${curr_index+1}_match${match_index+1}_team1score`).innerHTML = 0
-                        document.getElementById(`team_${curr_index+1}_match${match_index+1}_oppscore`).innerHTML = 0
+                        upcoming.push(team2)
                     }
                     else {
-                        document.getElementById(`team_${curr_index+1}_match${match_index+1}_team1score`).innerHTML = score + ""
-                        document.getElementById(`team_${curr_index+1}_match${match_index+1}_oppscore`).innerHTML = match_table[team2][team1]
-                        if (score === 2) {
-                            document.getElementById(`team_${curr_index+1}_match${match_index+1}_team1score`).style.backgroundColor = 'lime'
-                            document.getElementById(`team_${curr_index+1}_match${match_index+1}_team1name`).style.backgroundColor = 'lime'
-                        }
-                        else if (match_table[team2][team1] === 2) {
-                            document.getElementById(`team_${curr_index+1}_match${match_index+1}_oppscore`).style.backgroundColor = 'lime'
-                            document.getElementById(`team_${curr_index+1}_match${match_index+1}_oppname`).style.backgroundColor = 'lime'
-                        }
+                        completed.push(team2)
+                    }
+                }
+
+                for (let i = 0; i < completed.length; i++) {
+                    const team2 = completed[i]
+                    find_match_index[id_to_team[team1]][id_to_team[team2]] = [curr_index+1, match_index+1]
+                    document.getElementById(`team_${curr_index+1}_match${match_index+1}_team1score`).innerHTML = match_table[team1][team2]
+                    document.getElementById(`team_${curr_index+1}_match${match_index+1}_oppscore`).innerHTML = match_table[team2][team1]
+                    if (match_table[team1][team2] === 2) {
+                        document.getElementById(`team_${curr_index+1}_match${match_index+1}_team1score`).style.backgroundColor = 'lime'
+                        document.getElementById(`team_${curr_index+1}_match${match_index+1}_team1name`).style.backgroundColor = 'lime'
+                    }
+                    else if (match_table[team2][team1] === 2) {
+                        document.getElementById(`team_${curr_index+1}_match${match_index+1}_oppscore`).style.backgroundColor = 'lime'
+                        document.getElementById(`team_${curr_index+1}_match${match_index+1}_oppname`).style.backgroundColor = 'lime'
                     }
                     document.getElementById(`team_${curr_index+1}_match${match_index+1}_team1name`).innerHTML = id_to_team[team1]
                     document.getElementById(`team_${curr_index+1}_match${match_index+1}_oppname`).innerHTML = id_to_team[team2]
                     match_index += 1
                 }
+
+                var table = document.getElementById(`team_${curr_index+1}_matchestable`)
+                // console.log(match_index)
+                if (match_index === 7) {
+                    document.getElementById(`team_${curr_index+1}_upcoming`).classList.add("hidden")
+                }
+                else {
+                    var last_row = table.rows[match_index+2]
+                    last_row.parentNode.insertBefore(table.rows[1], last_row);
+                }
+
+                for (let i = 0; i < upcoming.length; i++) {
+                    const team2 = upcoming[i]
+                    find_match_index[id_to_team[team1]][id_to_team[team2]] = [curr_index+1, match_index+1]
+                    document.getElementById(`team_${curr_index+1}_match${match_index+1}_team1score`).innerHTML = 0
+                    document.getElementById(`team_${curr_index+1}_match${match_index+1}_oppscore`).innerHTML = 0
+                    document.getElementById(`team_${curr_index+1}_match${match_index+1}_team1name`).innerHTML = id_to_team[team1]
+                    document.getElementById(`team_${curr_index+1}_match${match_index+1}_oppname`).innerHTML = id_to_team[team2]
+                    match_index += 1
+                }
+
                 curr_index += 1
             }
 
             document.getElementById("main_body").classList.remove("hidden")
             document.getElementById("loading").classList.add("hidden")
+
+            document.getElementById("round_robin_table").style.animation = "0.5s slidedown"
+            document.getElementById("round_robin_table").style.animationFillMode = "forwards"
+
+            document.getElementById("category_table").style.animation = "0.5s slidedown"
+            document.getElementById("category_table").style.animationDelay = "0.05s"
+            document.getElementById("category_table").style.animationFillMode = "forwards"
+
+            document.getElementById("place_table").style.animation = "0.5s slidedown"
+            document.getElementById("place_table").style.animationDelay = "0.1s"
+            document.getElementById("place_table").style.animationFillMode = "forwards"
+
+            for (let i = 0; i < 8; i++) {
+                document.getElementById(`team_${i+1}_div`).style.animation = "0.5s slidedown"
+                document.getElementById(`team_${i+1}_div`).style.animationDelay = `${0.15+(0.05*i)}s`
+                document.getElementById(`team_${i+1}_div`).style.animationFillMode = "forwards"
+            }
         }
     }
 }
@@ -378,23 +431,6 @@ async function loop_simuations(teams_dict, curr_matches, curr_standings, MAJOR_S
     }
 
     // console.log(number_placement)
-
-    document.getElementById("round_robin_table").style.animation = "0.5s slidedown"
-    document.getElementById("round_robin_table").style.animationFillMode = "forwards"
-
-    document.getElementById("category_table").style.animation = "0.5s slidedown"
-    document.getElementById("category_table").style.animationDelay = "0.05s"
-    document.getElementById("category_table").style.animationFillMode = "forwards"
-
-    document.getElementById("place_table").style.animation = "0.5s slidedown"
-    document.getElementById("place_table").style.animationDelay = "0.1s"
-    document.getElementById("place_table").style.animationFillMode = "forwards"
-
-    for (let i = 0; i < 8; i++) {
-        document.getElementById(`team_${i+1}_div`).style.animation = "0.5s slidedown"
-        document.getElementById(`team_${i+1}_div`).style.animationDelay = `${0.15+(0.05*i)}s`
-        document.getElementById(`team_${i+1}_div`).style.animationFillMode = "forwards"
-    }
 }
 
 async function change_score(id) {
@@ -572,5 +608,104 @@ function shuffleArray(array, start, end) {
     for (let i = start; i > end; i--) {
         const j = Math.floor(Math.random() * (i-end+1)) + end;
         [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function reset_team(id) {
+    const team1 = team_to_id[document.getElementById(`team_${parseInt(id.charAt(5))}_match1_team1name`).innerHTML]
+
+    for (const [team2, score] of Object.entries(original_matches[team1])) {
+        let temp = find_match_index[id_to_team[team1]][id_to_team[team2]]
+        let curr_index = temp[0]
+        let match_index = temp[1]
+        // console.log(curr_index, match_index)
+        if (score === -1) {
+            document.getElementById(`team_${curr_index}_match${match_index}_team1score`).innerHTML = 0
+            document.getElementById(`team_${curr_index}_match${match_index}_oppscore`).innerHTML = 0
+            document.getElementById(`team_${curr_index}_match${match_index}_oppscore`).style.backgroundColor = ''
+            document.getElementById(`team_${curr_index}_match${match_index}_oppname`).style.backgroundColor = ''
+            document.getElementById(`team_${curr_index}_match${match_index}_team1score`).style.backgroundColor = ''
+            document.getElementById(`team_${curr_index}_match${match_index}_team1name`).style.backgroundColor = ''
+        }
+        else {
+            document.getElementById(`team_${curr_index}_match${match_index}_team1score`).innerHTML = score + ""
+            document.getElementById(`team_${curr_index}_match${match_index}_oppscore`).innerHTML = original_matches[team2][team1]
+            if (score === 2) {
+                document.getElementById(`team_${curr_index}_match${match_index}_team1score`).style.backgroundColor = 'lime'
+                document.getElementById(`team_${curr_index}_match${match_index}_team1name`).style.backgroundColor = 'lime'
+                document.getElementById(`team_${curr_index}_match${match_index}_oppscore`).style.backgroundColor = ''
+                document.getElementById(`team_${curr_index}_match${match_index}_oppname`).style.backgroundColor = ''
+            }
+            else if (original_matches[team2][team1] === 2) {
+                document.getElementById(`team_${curr_index}_match${match_index}_oppscore`).style.backgroundColor = 'lime'
+                document.getElementById(`team_${curr_index}_match${match_index}_oppname`).style.backgroundColor = 'lime'
+                document.getElementById(`team_${curr_index}_match${match_index}_team1score`).style.backgroundColor = ''
+                document.getElementById(`team_${curr_index}_match${match_index}_team1name`).style.backgroundColor = ''
+            }
+        }
+
+        temp = find_match_index[id_to_team[team2]][id_to_team[team1]]
+        curr_index = temp[0]
+        match_index = temp[1]
+        // console.log(curr_index, match_index)
+        if (original_matches[team2][team1] === -1) {
+            document.getElementById(`team_${curr_index}_match${match_index}_team1score`).innerHTML = 0
+            document.getElementById(`team_${curr_index}_match${match_index}_oppscore`).innerHTML = 0
+            document.getElementById(`team_${curr_index}_match${match_index}_oppscore`).style.backgroundColor = ''
+            document.getElementById(`team_${curr_index}_match${match_index}_oppname`).style.backgroundColor = ''
+            document.getElementById(`team_${curr_index}_match${match_index}_team1score`).style.backgroundColor = ''
+            document.getElementById(`team_${curr_index}_match${match_index}_team1name`).style.backgroundColor = ''
+        }
+        else {
+            document.getElementById(`team_${curr_index}_match${match_index}_team1score`).innerHTML = original_matches[team2][team1]
+            document.getElementById(`team_${curr_index}_match${match_index}_oppscore`).innerHTML = original_matches[team1][team2]
+            if (original_matches[team2][team1] === 2) {
+                document.getElementById(`team_${curr_index}_match${match_index}_team1score`).style.backgroundColor = 'lime'
+                document.getElementById(`team_${curr_index}_match${match_index}_team1name`).style.backgroundColor = 'lime'
+                document.getElementById(`team_${curr_index}_match${match_index}_oppscore`).style.backgroundColor = ''
+                document.getElementById(`team_${curr_index}_match${match_index}_oppname`).style.backgroundColor = ''
+            }
+            else if (original_matches[team1][team2] === 2) {
+                document.getElementById(`team_${curr_index}_match${match_index}_oppscore`).style.backgroundColor = 'lime'
+                document.getElementById(`team_${curr_index}_match${match_index}_oppname`).style.backgroundColor = 'lime'
+                document.getElementById(`team_${curr_index}_match${match_index}_team1score`).style.backgroundColor = ''
+                document.getElementById(`team_${curr_index}_match${match_index}_team1name`).style.backgroundColor = ''
+            }
+        }
+    }
+}
+
+function reset_all() {
+    for (const [team1, value] of Object.entries(original_matches)) {
+        for (const [team2, score] of Object.entries(value)) {
+            const temp = find_match_index[id_to_team[team1]][id_to_team[team2]]
+            const curr_index = temp[0]
+            const match_index = temp[1]
+            // console.log(curr_index, match_index)
+            if (score === -1) {
+                document.getElementById(`team_${curr_index}_match${match_index}_team1score`).innerHTML = 0
+                document.getElementById(`team_${curr_index}_match${match_index}_oppscore`).innerHTML = 0
+                document.getElementById(`team_${curr_index}_match${match_index}_oppscore`).style.backgroundColor = ''
+                document.getElementById(`team_${curr_index}_match${match_index}_oppname`).style.backgroundColor = ''
+                document.getElementById(`team_${curr_index}_match${match_index}_team1score`).style.backgroundColor = ''
+                document.getElementById(`team_${curr_index}_match${match_index}_team1name`).style.backgroundColor = ''
+            }
+            else {
+                document.getElementById(`team_${curr_index}_match${match_index}_team1score`).innerHTML = score + ""
+                document.getElementById(`team_${curr_index}_match${match_index}_oppscore`).innerHTML = original_matches[team2][team1]
+                if (score === 2) {
+                    document.getElementById(`team_${curr_index}_match${match_index}_team1score`).style.backgroundColor = 'lime'
+                    document.getElementById(`team_${curr_index}_match${match_index}_team1name`).style.backgroundColor = 'lime'
+                    document.getElementById(`team_${curr_index}_match${match_index}_oppscore`).style.backgroundColor = ''
+                    document.getElementById(`team_${curr_index}_match${match_index}_oppname`).style.backgroundColor = ''
+                }
+                else if (original_matches[team2][team1] === 2) {
+                    document.getElementById(`team_${curr_index}_match${match_index}_oppscore`).style.backgroundColor = 'lime'
+                    document.getElementById(`team_${curr_index}_match${match_index}_oppname`).style.backgroundColor = 'lime'
+                    document.getElementById(`team_${curr_index}_match${match_index}_team1score`).style.backgroundColor = ''
+                    document.getElementById(`team_${curr_index}_match${match_index}_team1name`).style.backgroundColor = ''
+                }
+            }
+        }
     }
 }

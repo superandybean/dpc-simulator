@@ -180,9 +180,29 @@ function generate(div2) {
         matches_div.classList.add("pt-2", "items-center", "justify-center")
 
         const matches_tables = document.createElement("table")
+        matches_tables.id = `team_${i}_matchestable`
         matches_tables.classList.add("mx-auto")
         matches_tables.style.borderCollapse = 'separate'
         matches_tables.style.borderSpacing = '0px 2px'
+
+        const completed_tr = document.createElement("tr")
+        completed_tr.classList.add("py-1")
+        const completed_td = document.createElement("td")
+        completed_td.colSpan = 5
+        completed_td.classList.add("text-center", "font-bold")
+        completed_td.innerHTML = "Completed Games"
+        completed_tr.appendChild(completed_td)
+        matches_tables.appendChild(completed_tr)
+
+        const upcoming_tr = document.createElement("tr")
+        upcoming_tr.classList.add("py-1")
+        const upcoming_td = document.createElement("td")
+        upcoming_td.colSpan = 5
+        upcoming_td.classList.add("text-center", "font-bold")
+        upcoming_td.id = `team_${i}_upcoming`
+        upcoming_td.innerHTML = "Upcoming Games"
+        upcoming_tr.appendChild(upcoming_td)
+        matches_tables.appendChild(upcoming_tr)
 
         for (let j = 1; j <= 7; j++) {
             const tr = document.createElement("tr")
@@ -202,6 +222,7 @@ function generate(div2) {
 
             const td_3 = document.createElement("td")
             td_3.classList.add("px-2", "text-center")
+            td_3.id = `team_${i}_match${j}_centerdash`
             td_3.innerHTML = '-'
             tr.appendChild(td_3)
 
@@ -220,6 +241,25 @@ function generate(div2) {
             matches_tables.appendChild(tr)
         }
 
+        const reset_tr = document.createElement("tr")
+        reset_tr.classList.add("py-1")
+        const reset_td = document.createElement("td")
+        reset_td.colSpan = 5
+        reset_td.classList.add("text-center")
+        const reset_team_span = document.createElement("span")
+        reset_team_span.classList.add("text-blue-500", "px-2", "cursor-pointer")
+        reset_team_span.innerHTML = "Reset Team"
+        reset_team_span.id = `team_${i}_resetteam`
+        reset_team_span.onclick = function() { reset_team(this.id) }
+        reset_td.appendChild(reset_team_span)
+        const reset_all_span = document.createElement("span")
+        reset_all_span.classList.add("text-blue-500", "px-2", "cursor-pointer")
+        reset_all_span.innerHTML = "Reset All"
+        reset_all_span.onclick = function() { reset_all() }
+        reset_td.appendChild(reset_all_span)
+        reset_tr.appendChild(reset_td)
+        matches_tables.appendChild(reset_tr)
+
         matches_div.appendChild(matches_tables)
         team_div.appendChild(matches_div)
 
@@ -228,4 +268,5 @@ function generate(div2) {
 
     document.getElementById("main_body").appendChild(main_container)
     document.getElementById("main_body").appendChild(team_container)
+
 }
