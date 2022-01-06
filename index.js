@@ -4,6 +4,9 @@ const match_table = {}
 const team_to_img = {}
 const find_match_index = {}
 let MAJOR_SLOTS = 0
+let WILD_CARD = 0
+let GROUP_STAGE = 0
+let PLAYOFF = 0
 
 const original_matches = {}
 
@@ -12,8 +15,12 @@ const UPDATE_NUM = 250
 
 let curr_update = 0
 
-function load_tables(LEAGUE_ID, slots) {
-    MAJOR_SLOTS = slots
+function load_tables(LEAGUE_ID, playoff, groups, wild) {
+    PLAYOFF = playoff
+    GROUP_STAGE = groups
+    WILD_CARD = wild
+    MAJOR_SLOTS = PLAYOFF + GROUP_STAGE + WILD_CARD
+
     let teams_request = new XMLHttpRequest();
     teams_request.open('GET', `https://api.opendota.com/api/leagues/${LEAGUE_ID}/teams`);
 
@@ -66,7 +73,7 @@ function load_tables(LEAGUE_ID, slots) {
             team_to_img[data[i].team_id] = data[i].logo_url
         }
 
-        console.log(id_to_team)
+        // console.log(id_to_team)
 
         let matches_request = new XMLHttpRequest();
         matches_request.open('GET', `https://api.opendota.com/api/leagues/${LEAGUE_ID}/matches`)
@@ -118,7 +125,7 @@ function load_tables(LEAGUE_ID, slots) {
 
             //
 
-            console.log(match_table)
+            // console.log(match_table)
 
             for (const [key, value] of Object.entries(match_table)) {
                 original_matches[key] = {...value}
@@ -619,6 +626,7 @@ function reset_team(id) {
         let curr_index = temp[0]
         let match_index = temp[1]
         // console.log(curr_index, match_index)
+        match_table[team1][team2] = original_matches[team1][team2]
         if (score === -1) {
             document.getElementById(`team_${curr_index}_match${match_index}_team1score`).innerHTML = 0
             document.getElementById(`team_${curr_index}_match${match_index}_oppscore`).innerHTML = 0
@@ -648,6 +656,7 @@ function reset_team(id) {
         curr_index = temp[0]
         match_index = temp[1]
         // console.log(curr_index, match_index)
+        match_table[team2][team1] = original_matches[team2][team1]
         if (original_matches[team2][team1] === -1) {
             document.getElementById(`team_${curr_index}_match${match_index}_team1score`).innerHTML = 0
             document.getElementById(`team_${curr_index}_match${match_index}_oppscore`).innerHTML = 0
@@ -673,6 +682,47 @@ function reset_team(id) {
             }
         }
     }
+
+    let standings = []
+
+    for (const [team_name, val] of Object.entries(match_table)) {
+        let wins = 0
+        let matches = 0
+        let map_wins = 0
+        let total_maps = 0
+        for (const [opp_team, score] of Object.entries(val)) {
+            if (score !== -1) {
+                if (match_table[opp_team][team_name] === 2 || score === 2) {
+                    matches += 1
+                }
+                map_wins += score
+                total_maps += (match_table[opp_team][team_name] + score)
+                if (score === 2) {
+                    wins += 1
+                }
+            }
+        }
+        standings.push({'wins': wins, 'matches': matches, 'map_wins': map_wins, 'total_maps': total_maps, 'team_name': team_name})
+    }
+
+    // console.log(standings)
+
+    standings.sort(standings_sort)
+
+    curr_update += 1
+    run_simulations(id_to_team, match_table, standings, MAJOR_SLOTS, curr_update)
+
+    for (let i = 0; i < standings.length; i++) {
+        if (i > 0 && standings[i].wins === standings[i-1].wins && standings[i].matches === standings[i-1].matches) {
+            document.getElementById(`team_${i+1}_place`).innerHTML = document.getElementById(`team_${i}_place`).innerHTML
+        }
+        else {
+            document.getElementById(`team_${i+1}_place`).innerHTML = (i+1) + "."
+        }
+        document.getElementById(`team_${i+1}_name`).innerHTML = id_to_team[standings[i].team_name]
+        document.getElementById(`team_${i+1}_record`).innerHTML = `${standings[i].wins}-${standings[i].matches-standings[i].wins}`
+        document.getElementById(`team_${i+1}_map_record`).innerHTML = `${standings[i].map_wins}-${standings[i].total_maps-standings[i].map_wins}`
+    }
 }
 
 function reset_all() {
@@ -682,6 +732,7 @@ function reset_all() {
             const curr_index = temp[0]
             const match_index = temp[1]
             // console.log(curr_index, match_index)
+            match_table[team1][team2] = original_matches[team1][team2]
             if (score === -1) {
                 document.getElementById(`team_${curr_index}_match${match_index}_team1score`).innerHTML = 0
                 document.getElementById(`team_${curr_index}_match${match_index}_oppscore`).innerHTML = 0
@@ -707,5 +758,46 @@ function reset_all() {
                 }
             }
         }
+    }
+
+    let standings = []
+
+    for (const [team_name, val] of Object.entries(match_table)) {
+        let wins = 0
+        let matches = 0
+        let map_wins = 0
+        let total_maps = 0
+        for (const [opp_team, score] of Object.entries(val)) {
+            if (score !== -1) {
+                if (match_table[opp_team][team_name] === 2 || score === 2) {
+                    matches += 1
+                }
+                map_wins += score
+                total_maps += (match_table[opp_team][team_name] + score)
+                if (score === 2) {
+                    wins += 1
+                }
+            }
+        }
+        standings.push({'wins': wins, 'matches': matches, 'map_wins': map_wins, 'total_maps': total_maps, 'team_name': team_name})
+    }
+
+    // console.log(standings)
+
+    standings.sort(standings_sort)
+
+    curr_update += 1
+    run_simulations(id_to_team, match_table, standings, MAJOR_SLOTS, curr_update)
+
+    for (let i = 0; i < standings.length; i++) {
+        if (i > 0 && standings[i].wins === standings[i-1].wins && standings[i].matches === standings[i-1].matches) {
+            document.getElementById(`team_${i+1}_place`).innerHTML = document.getElementById(`team_${i}_place`).innerHTML
+        }
+        else {
+            document.getElementById(`team_${i+1}_place`).innerHTML = (i+1) + "."
+        }
+        document.getElementById(`team_${i+1}_name`).innerHTML = id_to_team[standings[i].team_name]
+        document.getElementById(`team_${i+1}_record`).innerHTML = `${standings[i].wins}-${standings[i].matches-standings[i].wins}`
+        document.getElementById(`team_${i+1}_map_record`).innerHTML = `${standings[i].map_wins}-${standings[i].total_maps-standings[i].map_wins}`
     }
 }
