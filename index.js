@@ -357,6 +357,7 @@ async function loop_simuations(teams_dict, curr_matches, curr_standings, MAJOR_S
 }
 
 async function change_score(id) {
+    console.log(id)
     const curr_team = parseInt(id.charAt(5))
     const match_num = parseInt(id.charAt(12))
     const team1 = id.indexOf('opp') === -1
