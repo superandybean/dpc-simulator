@@ -7,6 +7,7 @@ let MAJOR_SLOTS = 0
 let WILD_CARD = 0
 let GROUP_STAGE = 0
 let PLAYOFF = 0
+const team_ratings = {}
 
 const tied_places = new Set()
 
@@ -90,6 +91,7 @@ function load_tables(LEAGUE_ID, playoff, groups, wild) {
                 }
             }
             team_to_img[data[i].team_id] = data[i].logo_url
+            team_ratings[data[i].team_id] = data[i].rating
         }
 
         let matches_request = new XMLHttpRequest();
@@ -122,6 +124,7 @@ function load_tables(LEAGUE_ID, playoff, groups, wild) {
             //HARD CODE MISTAKES
             if (LEAGUE_ID === 13712) {
                 match_table[7391077][7119077] = 2 // TP vs Lava
+                match_table[7119077][7298091] = 2 // Lava vs Noping
             }
             else if (LEAGUE_ID === 13709) {
                 match_table[7422789][8255888] = 2 // Unique (Mind Games) forfeit game 1 vs HellRaisers
@@ -132,8 +135,15 @@ function load_tables(LEAGUE_ID, playoff, groups, wild) {
             else if (LEAGUE_ID === 13740) {
                 match_table[8390848][8597391] = 2 // CF 2-0 CHILLAX
                 match_table[8605863][8112124] = 1 // Entity 1-2 Brame
+                match_table[8261397][8598715] = 0 // NoBountyHunter FF-W Into the Breach
                 match_table[8597391][8261397] = 2 // CHILLAX W-FF NoBountyHunter
                 match_table[8261397][8597391] = 0  // NoBountyHunter FF-W CHILLAX
+                match_table[8112124][8261397] = 2 // Brame W-FF NoBountyHunter
+                match_table[8261397][8112124] = 0  // NoBountyHunter FF-W Brame
+                match_table[8390848][8261397] = 2 // Chicken Fighters W-FF NoBountyHunter
+                match_table[8261397][8390848] = 0  // NoBountyHunter FF-W Chicken Fighters
+                match_table[8605863][8261397] = 2 // Entity W-FF NoBountyHunter
+                match_table[8261397][8605863] = 0  // NoBountyHunter FF-W Entity
             }
             else if (LEAGUE_ID === 13717) {
                 match_table[1520578][7356881] = 0 // CDEC FF-W SHENZHEN
@@ -412,28 +422,18 @@ async function loop_simuations(teams_dict, curr_matches, curr_standings, MAJOR_S
 
                     for (const [team2, score] of Object.entries(value)) {
                         if (score === -1) {
-                            if (Math.random() < 0.5) {
-                                new_matches[team1][team2] = 2
-                                if (Math.random() < 0.5) {
-                                    new_matches[team2][team1] = 1
+                            while (new_matches[team1][team2] !== 2 && new_matches[team2][team1] !== 2) {
+                                if (Math.random() < win_probability(team1, team2)) {
+                                    new_matches[team1][team2] += 1
                                 }
                                 else {
-                                    new_matches[team2][team1] = 0
-                                }
-                            }
-                            else {
-                                new_matches[team2][team1] = 2
-                                if (Math.random() < 0.5) {
-                                    new_matches[team1][team2] = 1
-                                }
-                                else {
-                                    new_matches[team1][team2] = 0
+                                    new_matches[team2][team1] += 1
                                 }
                             }
                         }
                         else if (score !== 2 && new_matches[team2][team1] !== 2) {
                             while (new_matches[team1][team2] !== 2 && new_matches[team2][team1] !== 2) {
-                                if (Math.random() < 0.5) {
+                                if (Math.random() < win_probability(team1, team2)) {
                                     new_matches[team1][team2] += 1
                                 }
                                 else {
@@ -595,6 +595,11 @@ async function loop_simuations(teams_dict, curr_matches, curr_standings, MAJOR_S
     }
 
     // console.log(number_placement)
+}
+
+function win_probability(team1, team2) {
+    return 0.5
+    // return 1.0 / (Math.pow(10, ((team_ratings[team1]-team_ratings[team2])*-1.0) / 1000) + 1)
 }
 
 function tiebreak_logic(matches, tiebreak_teams) {
