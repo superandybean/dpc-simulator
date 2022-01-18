@@ -149,6 +149,10 @@ function load_tables(LEAGUE_ID, playoff, groups, wild) {
                 match_table[1520578][7356881] = 0 // CDEC FF-W SHENZHEN
                 match_table[7356881][1520578] = 2 // SHENZHEN w-FF CDEC
             }
+            else if (LEAGUE_ID === 13713) {
+                match_table[1061269][6767209] = 2 // Our Way (Wolf Team) 2 - 1 Inverse
+                match_table[6767209][1061269] = 1 // Inverse 1 - 2 Our Way
+            }
 
             //
 
