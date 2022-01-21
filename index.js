@@ -153,6 +153,10 @@ function load_tables(LEAGUE_ID, playoff, groups, wild) {
                 match_table[1061269][6767209] = 2 // Our Way (Wolf Team) 2 - 1 Inverse
                 match_table[6767209][1061269] = 1 // Inverse 1 - 2 Our Way
             }
+            else if (LEAGUE_ID === 13741) {
+                match_table[8260983][39] = 0 // Undying 0-2 EG
+                match_table[7819028][8376426] = 2 // 4Zoomers 2-0 Wildcard Gaming
+            }
 
             //
 
