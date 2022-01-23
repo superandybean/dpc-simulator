@@ -144,6 +144,12 @@ function load_tables(LEAGUE_ID, playoff, groups, wild) {
                 match_table[8261397][8390848] = 0  // NoBountyHunter FF-W Chicken Fighters
                 match_table[8605863][8261397] = 2 // Entity W-FF NoBountyHunter
                 match_table[8261397][8605863] = 0  // NoBountyHunter FF-W Entity
+
+                match_table[8598715][8343488] = 2 // ITB 2 - 0 GF (tiebreaks)
+                match_table[8605863][8390848] = 2 // Entity 2 - 0 CF (tiebreaks)
+                match_table[8112124][8390848] = 1 // Brame 1 - 2 CF (tiebreaks)
+                match_table[8605863][8112124] = 1 // Entity 0 - 2 Brame (tiebreaks)
+
             }
             else if (LEAGUE_ID === 13717) {
                 match_table[1520578][7356881] = 0 // CDEC FF-W SHENZHEN
@@ -156,6 +162,27 @@ function load_tables(LEAGUE_ID, playoff, groups, wild) {
             else if (LEAGUE_ID === 13741) {
                 match_table[8260983][39] = 0 // Undying 0-2 EG
                 match_table[7819028][8376426] = 2 // 4Zoomers 2-0 Wildcard Gaming
+            }
+            else if (LEAGUE_ID === 13738) {
+                match_table[2586976][7554697] = 2 // OG 2 - 0 Nigma (tiebreak)
+                match_table[1838315][7554697] = 0 // Secret 0 - 2 Nigma (tiebreak)
+                match_table[8291895][2586976] = 2 // Tundra 2 - 0 OG (tiebreak)
+                match_table[2586976][1838315] = 2 // OG 2 - 0 Secret (tiebreak)
+                match_table[8291895][7554697] = 2 // Tundra 2 - 0 Nigma (tiebreak)
+                match_table[8291895][1838315] = 1 // Tundra 1 - 2 Secret (tiebreak)
+            }
+            else if (LEAGUE_ID === 13747) {
+                match_table[8360138][8261197] = 2 // Neon 2 - 1 Motivate
+                match_table[8360138][8254145] = 1 // Neon 1 - 2 Execration
+                match_table[8254145][8261197] = 0 // Execration 0 - 2 Motivate
+
+                match_table[350190][8244493] = 0 // Fnatic 0 - 2 SMG
+                match_table[350190][8214850] = 2 // Fnatic 2 - 1 T1
+                match_table[8214850][8244493] = 2 // T1 2 - 0 SMG
+            }
+            else if (LEAGUE_ID === 13748) {
+                match_table[8572181][8571960] = 2 // Nigma 2 - 1 Ragdoll
+                match_table[8261554][8605296] = 2 // AG 2 - 0 Spawn
             }
 
             //
