@@ -125,9 +125,12 @@ function load_tables(LEAGUE_ID, playoff, groups, wild) {
             if (LEAGUE_ID === 13712) {
                 match_table[7391077][7119077] = 2 // TP vs Lava
                 match_table[7119077][7298091] = 2 // Lava vs Noping
+
+                // sa tiebreaks
             }
             else if (LEAGUE_ID === 13709) {
                 match_table[7422789][8255888] = 2 // Unique (Mind Games) forfeit game 1 vs HellRaisers
+                match_table[1883502][7422789] = 1
             }
             else if (LEAGUE_ID === 13716) {
                 match_table[6209804][5] = 2 // RNG 2-1 iG
@@ -183,6 +186,16 @@ function load_tables(LEAGUE_ID, playoff, groups, wild) {
             else if (LEAGUE_ID === 13748) {
                 match_table[8572181][8571960] = 2 // Nigma 2 - 1 Ragdoll
                 match_table[8261554][8605296] = 2 // AG 2 - 0 Spawn
+            }
+            else if (LEAGUE_ID === 13710) {
+                match_table[8598633][7118032] = 1
+                match_table[8598633][8588969] = 2
+                match_table[8588969][8261774] = 0
+                match_table[7118032][8261774] = 2
+                match_table[7118032][8588969] = 0
+            }
+            else if (LEAGUE_ID === 13742) {
+                match_table[8604954][8606828] = 0
             }
 
             //
