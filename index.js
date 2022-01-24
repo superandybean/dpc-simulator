@@ -126,7 +126,10 @@ function load_tables(LEAGUE_ID, playoff, groups, wild) {
                 match_table[7391077][7119077] = 2 // TP vs Lava
                 match_table[7119077][7298091] = 2 // Lava vs Noping
 
-                // sa tiebreaks
+                match_table[8131728][7298091] = 0
+                match_table[7298091][8131728] = 2
+                match_table[8254400][8375259] = 2
+                match_table[8375259][8254400] = 0
             }
             else if (LEAGUE_ID === 13709) {
                 match_table[7422789][8255888] = 2 // Unique (Mind Games) forfeit game 1 vs HellRaisers
@@ -134,6 +137,9 @@ function load_tables(LEAGUE_ID, playoff, groups, wild) {
             }
             else if (LEAGUE_ID === 13716) {
                 match_table[6209804][5] = 2 // RNG 2-1 iG
+
+                match_table[6209804][6209166] = 2
+                match_table[6209166][6209804] = 1
             }
             else if (LEAGUE_ID === 13740) {
                 match_table[8390848][8597391] = 2 // CF 2-0 CHILLAX
